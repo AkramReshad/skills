@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codebase Map"
+  short_description: "Update a repo architecture map"
+  default_prompt: "Use $codebase-map to update docs/codebase_architecture.md using docs/codebase_domains.md as the canonical domain seed if present."
