@@ -1,6 +1,6 @@
 ---
 name: doc-creator
-description: Create and update concise, standalone Markdown project docs. Use when Codex needs to write, revise, organize, or relocate docs while preserving truth, matching repository conventions, adding required YAML frontmatter, and avoiding conversational artifacts.
+description: Create and update concise, standalone Markdown project docs. Use when Codex needs to write, revise, organize, or relocate docs while preserving truth, matching repository conventions, and avoiding conversational artifacts.
 ---
 
 # Doc Creator
@@ -19,26 +19,17 @@ Do not record major decisions, architecture, vendors, dates, owners, metrics, re
 2. Use the user-provided path when given.
 3. If no path is given, use `docs/` when it exists. Ask before creating `docs/`.
 4. Use the closest existing domain folder. Ask before creating a new domain folder.
-5. Check nearby docs or templates for frontmatter, naming, section order, and tone.
+5. Check nearby docs or templates for naming, section order, and tone.
 6. Write or edit only the content needed.
 7. Run the final checks.
 
 Common folder names such as `docs/business`, `docs/infra`, `docs/architecture`, `docs/product`, `docs/hardware`, `docs/research`, and `docs/operations` are examples, not standards. Follow the repo's existing taxonomy.
 
-## Required YAML Header
+## Naming
 
-Every created Markdown doc must start with:
-
-```yaml
----
-read_when: Succinct explanation of when an agent should read this doc. No more than 2-3 sentences.
-last_updated: YYYY-MM-DD
----
-```
-
-Use the current local date for `last_updated`. Update it when materially changing an existing doc.
-
-If existing frontmatter is present, preserve existing fields and add or update `read_when` and `last_updated`. If the repo has an incompatible frontmatter convention, follow the repo convention and preserve the two fields when possible.
+Treat path, filename, title, and scope as one contract. Do not materially change that contract. If
+requested content exceeds it, decide whether to rename, split, or create another document; update
+references.
 
 ## Writing Rules
 
@@ -80,7 +71,7 @@ Use only headings that earn their place. Prefer compact sections such as `Decisi
 
 Confirm:
 
-- the doc has `read_when` and `last_updated`
+- the path, filename, title, and scope agree
 - material claims are supported or marked as open questions
 - the doc is standalone
 - redundant sections and repeated points are removed
