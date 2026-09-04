@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: scripts/link-skills [--adopt] [--dry-run] [codex] [claude] [agent] [agents]
+
+Create one symlink per repository skill in the selected personal skill directories.
+With no targets, links into all four supported directories.
+
+  --adopt    Move existing entries to a timestamped backup before linking.
+  --dry-run  Print the operations without changing the filesystem.
+EOF
+}
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+adopt=0
+dry_run=0
+targets=()
+
+while (($#)); do
+  case "$1" in
+    --adopt)
+      adopt=1
+      ;;
+    --dry-run)
+      dry_run=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    codex|claude|agent|agents)
+      targets+=("$1")
+      ;;
+    *)
+      printf 'Unknown argument: %s\n\n' "$1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+if ((${#targets[@]} == 0)); then
+  targets=(codex claude agent agents)
+fi
+
+target_path() {
+  case "$1" in
+    codex)
+      printf '%s/skills\n' "${CODEX_HOME:-$HOME/.codex}"
+      ;;
+    claude)
+      printf '%s/.claude/skills\n' "$HOME"
+      ;;
+    agent)
+      printf '%s/.agent/skills\n' "$HOME"
+      ;;
+    agents)
+      printf '%s/.agents/skills\n' "$HOME"
+      ;;
+  esac
+}
+
+run() {
+  if ((dry_run)); then
+    printf 'DRY RUN:'
+    printf ' %q' "$@"
+    printf '\n'
+  else
+    "$@"
+  fi
+}
+
+backup_root="${SKILLS_BACKUP_ROOT:-$HOME/.skill-backups}/$(date +%Y%m%d-%H%M%S)-$$"
+linked=0
+unchanged=0
+conflicts=0
+shopt -s nullglob
+skill_files=("$repo_root"/*/SKILL.md)
+
+if ((${#skill_files[@]} == 0)); then
+  printf 'No skills found in %s\n' "$repo_root" >&2
+  exit 1
+fi
+
+for target in "${targets[@]}"; do
+  destination_root="$(target_path "$target")"
+  run mkdir -p "$destination_root"
+
+  for skill_file in "${skill_files[@]}"; do
+    skill_dir="${skill_file%/SKILL.md}"
+    skill_name="${skill_dir##*/}"
+    destination="$destination_root/$skill_name"
+
+    if [[ -L "$destination" ]]; then
+      existing_link="$(readlink "$destination")"
+      if [[ "$existing_link" == "$skill_dir" ]]; then
+        ((unchanged += 1))
+        continue
+      fi
+    elif [[ ! -e "$destination" ]]; then
+      run ln -s "$skill_dir" "$destination"
+      ((linked += 1))
+      continue
+    fi
+
+    if ((!adopt)); then
+      printf 'Conflict: %s already exists; rerun with --adopt to back it up and replace it.\n' "$destination" >&2
+      ((conflicts += 1))
+      continue
+    fi
+
+    backup="$backup_root/$target/$skill_name"
+    run mkdir -p "${backup%/*}"
+    run mv "$destination" "$backup"
+    run ln -s "$skill_dir" "$destination"
+    ((linked += 1))
+  done
+done
+
+printf 'Linked: %d; already linked: %d; conflicts: %d\n' "$linked" "$unchanged" "$conflicts"
+if ((adopt && linked > 0)); then
+  printf 'Backups, when needed: %s\n' "$backup_root"
+fi
+
+if ((conflicts > 0)); then
+  exit 1
+fi

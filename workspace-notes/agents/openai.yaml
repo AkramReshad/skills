@@ -1,0 +1,4 @@
+interface:
+  display_name: "Workspace Notes"
+  short_description: "Create YAML-headed notes in notes/ folder"
+  default_prompt: "Use -notes to capture a useful learning in notes/."

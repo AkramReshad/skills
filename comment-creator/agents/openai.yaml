@@ -1,0 +1,4 @@
+interface:
+  display_name: "Comment Creator"
+  short_description: "Write durable, residue-free code comments"
+  default_prompt: "Use $comment-creator to write or revise concise code comments."

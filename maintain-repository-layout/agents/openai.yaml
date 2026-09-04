@@ -1,0 +1,7 @@
+interface:
+  display_name: "Maintain Repository Layout"
+  short_description: "Keep repository directories clean and semantic"
+  default_prompt: "Use $maintain-repository-layout to organize this repository path and repair affected references."
+
+policy:
+  allow_implicit_invocation: false

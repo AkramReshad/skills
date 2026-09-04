@@ -1,0 +1,7 @@
+interface:
+  display_name: "Optimize Codebase Workflow"
+  short_description: "Plan, implement, verify, and commit optimizations"
+  default_prompt: "Use $optimize-codebase-workflow to discover and execute performance optimization opportunities end to end."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Agent Platform"
+  short_description: "Run nemtadplayer on Android emulators"
+  default_prompt: "Use $android-agent-platform to boot an emulator, restore or provision a nemtadplayer tablet, and validate the app through agentctl."

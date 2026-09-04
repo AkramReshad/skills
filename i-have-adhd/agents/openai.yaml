@@ -1,0 +1,6 @@
+interface:
+  display_name: "I Have ADHD"
+  short_description: "Shape responses for ADHD-friendly action"
+  default_prompt: "Use $i-have-adhd to keep responses actionable, stateful, and easy to follow."
+policy:
+  allow_implicit_invocation: false

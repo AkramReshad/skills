@@ -1,0 +1,7 @@
+interface:
+  display_name: "Streamline Codebase Workflow"
+  short_description: "Plan, implement, review, and commit ergonomics"
+  default_prompt: "Use $streamline-codebase-workflow to discover and execute codebase ergonomics opportunities end to end."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deepen Codebase Workflow"
+  short_description: "Plan, implement, review, and commit deepenings"
+  default_prompt: "Use $deepen-codebase-workflow to discover and execute architecture deepening opportunities end to end."

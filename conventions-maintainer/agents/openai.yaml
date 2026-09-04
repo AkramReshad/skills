@@ -1,0 +1,4 @@
+interface:
+  display_name: "Conventions Maintainer"
+  short_description: "Maintain concise repo conventions docs"
+  default_prompt: "Create or update a repo-root CONVENTIONS.md with terse domain-based patterns and anti-patterns."

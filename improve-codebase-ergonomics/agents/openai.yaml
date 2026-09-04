@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Ergonomics"
+  short_description: "Find organization and convenience improvements"
+  default_prompt: "Use $improve-codebase-ergonomics to find codebase organization and convenience opportunities."
+
+policy:
+  allow_implicit_invocation: false
