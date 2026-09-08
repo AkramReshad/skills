@@ -42,6 +42,8 @@ browser-use summary <workspace-alias> --url /target --brief
 browser-use quick-snapshot <workspace-alias> --url /target
 browser-use fill <workspace-alias> "#selector-or-name" "..."
 browser-use click <workspace-alias> "#selector-or-name"
+browser-use click <workspace-alias> --selector '.chart' --position 50%,50% --timeout-ms 5000
+browser-use click-at <workspace-alias> --x 800 --y 420
 browser-use wait <workspace-alias> --url-contains "/target" --return-current
 browser-use assert-url <workspace-alias> /target
 browser-use assert-text <workspace-alias> "Ready"
@@ -50,6 +52,18 @@ browser-use assert-no-page-errors <workspace-alias> --url /target
 ```
 
 Use `browser-use fill|click|press|select|wait` for routine UI interaction.
+
+`click --position x,y` accepts selector-relative pixels or percentages. `click` also supports `--timeout-ms`, `--force`, and `--trial`. Failed actionability checks report target and intercepting-node geometry. Use `click-at --x <pixels> --y <pixels>` for raw viewport coordinates.
+
+Capture performance and hang evidence with explicit diagnostics:
+
+```bash
+browser-use trace start <workspace-alias>
+browser-use trace stop <workspace-alias>
+browser-use cpu-profile start <workspace-alias>
+browser-use cpu-profile stop <workspace-alias>
+browser-use diagnose-renderer <workspace-alias> --timeout-ms 1000
+```
 
 `browser-use` discovers `.context-tools.toml` from the current directory upward.
 
