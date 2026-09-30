@@ -5,7 +5,7 @@ on:
     secrets:
       TYPESAFE_API_KEY:
         required: true
-      CODEX_ACCESS_TOKEN:
+      CODEX_AUTH_JSON:
         required: true
 
 permissions:
@@ -31,11 +31,34 @@ jobs:
           node-version: '22'
       - name: Install Codex
         run: npm install --global @openai/codex
+      - name: Identify Codex login state
+        id: auth
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: echo "key=$(node .note_tools/scripts/codex-auth-state.mjs key)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/codex-auth.enc
+          key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: codex-auth-${{ steps.auth.outputs.key }}-
+      - name: Restore Codex login
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: node .note_tools/scripts/codex-auth-state.mjs restore
       - name: Consolidate notes added yesterday
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
-          CODEX_ACCESS_TOKEN: ${{ secrets.CODEX_ACCESS_TOKEN }}
         run: python .note_tools/scripts/consolidate-notes.py
+      - name: Encrypt refreshed Codex login
+        if: always() && steps.auth.outputs.key != ''
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: node .note_tools/scripts/codex-auth-state.mjs save
+      - uses: actions/cache/save@v4
+        if: always() && steps.auth.outputs.key != ''
+        with:
+          path: ${{ runner.temp }}/codex-auth.enc
+          key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Commit note changes
         run: |
           if [[ -n "$(git status --porcelain -- notes)" ]]; then
