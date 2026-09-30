@@ -17,12 +17,14 @@ from zoneinfo import ZoneInfo
 TIMEZONE = ZoneInfo("America/Los_Angeles")
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 COMMIT_SUBJECT = "Consolidate workspace notes"
+MAX_NOTE_WORDS = 150
+SKILL_PATH = Path(__file__).resolve().parents[1] / "workspace-notes" / "SKILL.md"
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 CRITERIA = {
     "duplicate": "The new note adds no useful information beyond the existing note; remove the new note.",
     "supersedes": "The new note fully replaces the existing note, including its useful information and any correction or update; remove the existing note.",
-    "merge": "The notes contain complementary useful information best kept together in one note; combine their content.",
-    "separate": "The notes are useful as separate notes, even if they concern a related topic; keep both.",
+    "merge": "The notes capture the same specific learning or insight, and the proposed merged note remains short, succinct, focused, and within 150 words under the workspace-notes skill; combine their content.",
+    "separate": "The notes capture distinct insights, or combining them would produce a broad or long note under the workspace-notes skill; keep both.",
 }
 
 
@@ -59,20 +61,21 @@ def added_notes_for_day(day):
     return active_commits, additions
 
 
-def evaluate(new_note, existing):
+def evaluate(new_note, existing, skill):
     questions = {}
     for index, (path, content) in enumerate(existing):
         questions[str(index)] = {
             "type": "choice",
             "instructions": {
-                "question": "How should the new workspace note relate to this existing workspace note?",
+                "question": "How should these notes be consolidated according to `state.workspace_notes_skill`? Evaluate the specific insight, not just a shared topic.",
+                "proposed_merged_note": merge_notes(new_note, [content]),
                 "existing_note_path": path,
                 "existing_note": content,
                 "new_note_reference": "Compare with `state.new_note`.",
             },
             "criteria": CRITERIA,
         }
-    payload = json.dumps({"model": "jev-latest", "state": {"new_note": new_note}, "questions": questions}).encode()
+    payload = json.dumps({"model": "jev-latest", "state": {"new_note": new_note, "workspace_notes_skill": skill}, "questions": questions}).encode()
     request = urllib.request.Request(
         "https://api.typesafe.ai/v1/systemone",
         data=payload,
@@ -137,6 +140,7 @@ def consolidate(day):
     if not new_paths:
         print(f"No newly added notes on {day}; nothing to process")
         return
+    skill = SKILL_PATH.read_text()
     original = current.copy()
     existing_paths = set(current) - set(new_paths)
     for new_path in new_paths:
@@ -146,15 +150,23 @@ def consolidate(day):
         targets = sorted(existing_paths)
         for offset in range(0, len(targets), 32):
             batch = targets[offset:offset + 32]
-            decisions.update(evaluate(current[new_path], [(path, current[path]) for path in batch]))
+            decisions.update(evaluate(current[new_path], [(path, current[path]) for path in batch], skill))
         if "duplicate" in decisions.values():
             del current[new_path]
             print(f"Removed duplicate: {new_path}")
             continue
         superseded = [path for path, choice in decisions.items() if choice == "supersedes"]
-        merged = [path for path, choice in decisions.items() if choice == "merge"]
-        if merged:
-            current[new_path] = merge_notes(current[new_path], [current[path] for path in merged])
+        merged = []
+        for path, choice in decisions.items():
+            if choice != "merge":
+                continue
+            candidate = merge_notes(current[new_path], [current[path]])
+            if len(candidate.split()) > MAX_NOTE_WORDS:
+                continue
+            if merged and evaluate(current[new_path], [(path, current[path])], skill)[path] != "merge":
+                continue
+            current[new_path] = candidate
+            merged.append(path)
         for path in superseded + merged:
             del current[path]
             existing_paths.remove(path)
