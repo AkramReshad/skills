@@ -23,4 +23,4 @@ description: Create a concise learning note in the current workspace's notes/ di
 ## Conventions
 - Keep notes short and skimmable.
 - Prefer bullets over paragraphs.
-- During consolidation, preserve short, focused notes. Merge only notes about the same specific insight when the combined result remains within 150 words. Keep distinct insights in separate files.
+- During consolidation, rewrite overlapping notes to remove redundancy and preserve useful details. Produce short, focused notes of at most 150 words each. Split distinct insights into separate files.
