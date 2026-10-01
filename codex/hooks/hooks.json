@@ -1,0 +1,42 @@
+{
+  "description": "Save notes before compaction and load relevant notes for user prompts.",
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/pre_compact_notes.py",
+            "timeout": 600,
+            "statusMessage": "Saving workspace notes"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/load_relevant_notes.py",
+            "timeout": 150,
+            "statusMessage": "Loading relevant workspace notes",
+            "additionalContextLimit": 0
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/reset_included_notes.py",
+            "timeout": 10,
+            "statusMessage": "Resetting included workspace notes"
+          }
+        ]
+      }
+    ]
+  }
+}

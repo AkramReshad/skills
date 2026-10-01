@@ -29,8 +29,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Codex
-        run: npm install --global @openai/codex
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Codex SDK
+        run: pip install -r .note_tools/codex/hooks/requirements.txt
       - name: Identify Codex login state
         id: auth
         env:

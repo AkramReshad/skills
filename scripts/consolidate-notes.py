@@ -120,16 +120,13 @@ def rewrite_notes(sources, skill):
         + skill + "\n\nSource notes:\n" + json.dumps(sources, ensure_ascii=False)
     )
     with tempfile.TemporaryDirectory(prefix="codex_note_rewrite_") as temp:
-        output = Path(temp) / "notes.json"
-        subprocess.run(
-            ["codex", "exec", "--ignore-user-config", "--disable", "hooks", "--ephemeral", "--sandbox", "read-only",
-             "--skip-git-repo-check", "--cd", temp,
-             "--output-schema", str(SKILL_PATH.parents[1] / "scripts" / "consolidated-notes.schema.json"),
-             "--output-last-message", str(output), "-"],
-            input=prompt, text=True, check=True, stdout=subprocess.DEVNULL,
-            timeout=600,
-        )
-        notes = json.loads(output.read_text())["notes"]
+        from openai_codex import Codex, CodexConfig, Sandbox
+
+        schema = json.loads((SKILL_PATH.parents[1] / "scripts" / "consolidated-notes.schema.json").read_text())
+        with Codex(CodexConfig(config_overrides=("features.hooks=false",))) as codex:
+            thread = codex.thread_start(cwd=temp, ephemeral=True, sandbox=Sandbox.read_only)
+            result = thread.run(prompt, output_schema=schema)
+        notes = json.loads(result.final_response)["notes"]
     if not notes:
         raise ValueError("Codex returned no replacement notes")
     replacements = {}
