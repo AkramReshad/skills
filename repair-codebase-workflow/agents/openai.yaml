@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repair Codebase Workflow"
+  short_description: "Plan, implement, review, and commit codebase repairs"
+  default_prompt: "Use $repair-codebase-workflow to discover all codebase quality issues and execute their repairs end to end."
