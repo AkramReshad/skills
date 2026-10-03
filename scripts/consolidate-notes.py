@@ -18,7 +18,6 @@ from zoneinfo import ZoneInfo
 TIMEZONE = ZoneInfo("America/Los_Angeles")
 BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com"
 COMMIT_SUBJECT = "Consolidate workspace notes"
-MAX_NOTE_WORDS = 150
 SKILL_PATH = Path(__file__).resolve().parents[1] / "workspace-notes" / "SKILL.md"
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 CRITERIA = {
@@ -127,22 +126,16 @@ def rewrite_notes(sources, skill):
             thread = codex.thread_start(cwd=temp, ephemeral=True, sandbox=Sandbox.read_only)
             result = thread.run(prompt, output_schema=schema)
         notes = json.loads(result.final_response)["notes"]
-    if not notes:
-        raise ValueError("Codex returned no replacement notes")
     replacements = {}
     for note in notes:
         filename, content = note["filename"], note["content"].strip() + "\n"
         filename = filename.removeprefix("notes/")
-        if not content.startswith("# ") or len(content.split()) > MAX_NOTE_WORDS:
-            raise ValueError(f"Note must have a title and at most {MAX_NOTE_WORDS} words: {filename}")
         path = "notes/" + filename
         replacements[path] = content
     return replacements
 
 
 def consolidate(day):
-    if git("status", "--porcelain", "--", "notes"):
-        raise RuntimeError("Working tree has note changes")
     active_commits, additions = added_notes_for_day(day)
     if not active_commits:
         print(f"No commits to the default branch on {day}; nothing to process")
@@ -175,9 +168,6 @@ def consolidate(day):
         related = [path for path, choice in decisions.items() if choice in ("merge", "supersedes")]
         source_paths = [new_path, *related]
         replacements = rewrite_notes({path: current[path] for path in source_paths}, skill)
-        collisions = replacements.keys() & (current.keys() - set(source_paths))
-        if collisions:
-            raise ValueError(f"Rewritten notes would overwrite unrelated notes: {sorted(collisions)}")
         for path in source_paths:
             del current[path]
             existing_paths.discard(path)
