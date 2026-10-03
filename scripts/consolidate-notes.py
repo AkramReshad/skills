@@ -166,6 +166,9 @@ def consolidate(day):
             print(f"Removed duplicate: {new_path}")
             continue
         related = [path for path, choice in decisions.items() if choice in ("merge", "supersedes")]
+        if not related:
+            existing_paths.add(new_path)
+            continue
         source_paths = [new_path, *related]
         replacements = rewrite_notes({path: current[path] for path in source_paths}, skill)
         for path in source_paths:
