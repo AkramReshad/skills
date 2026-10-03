@@ -4,7 +4,6 @@
 import argparse
 import json
 import os
-import re
 import tempfile
 import subprocess
 import sys
@@ -134,13 +133,9 @@ def rewrite_notes(sources, skill):
     for note in notes:
         filename, content = note["filename"], note["content"].strip() + "\n"
         filename = filename.removeprefix("notes/")
-        if not re.fullmatch(r"[a-z0-9]+(?:_[a-z0-9]+)*\.md", filename):
-            raise ValueError(f"Invalid note filename: {filename}")
         if not content.startswith("# ") or len(content.split()) > MAX_NOTE_WORDS:
             raise ValueError(f"Note must have a title and at most {MAX_NOTE_WORDS} words: {filename}")
         path = "notes/" + filename
-        if path in replacements:
-            raise ValueError(f"Repeated note filename: {filename}")
         replacements[path] = content
     return replacements
 
