@@ -34,7 +34,6 @@ Do not:
 - add replacement tests
 - modify production code
 - broaden the task into implementation or architecture work
-- commit or push unless the user explicitly requests it
 
 If the review reveals important untested behavior, report it separately; do not expand this skill into test creation.
 
