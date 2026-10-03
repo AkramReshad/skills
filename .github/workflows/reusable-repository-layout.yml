@@ -1,0 +1,77 @@
+name: Maintain repository layout
+
+on:
+  workflow_call:
+    secrets:
+      TYPESAFE_API_KEY:
+        required: true
+      CODEX_AUTH_JSON:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: overnight-notes
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: repository
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: AkramReshad/skills
+          path: agent_tools
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Codex SDK
+        run: pip install -r "$GITHUB_WORKSPACE/agent_tools/codex/hooks/requirements.txt"
+      - name: Identify Codex login state
+        id: auth
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: echo "key=$(node "$GITHUB_WORKSPACE/agent_tools/scripts/codex-auth-state.mjs" key)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/codex-auth.enc
+          key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: codex-auth-${{ steps.auth.outputs.key }}-
+      - name: Restore Codex login
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: node "$GITHUB_WORKSPACE/agent_tools/scripts/codex-auth-state.mjs" restore
+      - name: Maintain repository layout
+        env:
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+        run: python "$GITHUB_WORKSPACE/agent_tools/codex/maintenance/repository_layout.py" .
+      - name: Encrypt refreshed Codex login
+        if: always() && steps.auth.outputs.key != ''
+        env:
+          CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
+        run: node "$GITHUB_WORKSPACE/agent_tools/scripts/codex-auth-state.mjs" save
+      - uses: actions/cache/save@v4
+        if: always() && steps.auth.outputs.key != ''
+        with:
+          path: ${{ runner.temp }}/codex-auth.enc
+          key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Commit layout changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Maintain repository layout"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
