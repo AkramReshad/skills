@@ -36,7 +36,6 @@ Read existing documentation first:
 - `UBIQUITOUS_LANGUAGE.md` at the workspace root
 - `{repo}/docs/codebase_domains.md`
 - `{repo}/docs/codebase_architecture.md`
-- `{repo}/CONVENTIONS.md` when present
 
 If any of these files don't exist, proceed silently — don't flag their absence or suggest creating them upfront.
 

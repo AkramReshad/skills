@@ -13,7 +13,7 @@ import certifi
 
 
 SKILL_PATH = Path(__file__).resolve().parents[2] / "maintain-repository-layout/SKILL.md"
-CONVENTION_FILES = {"CONVENTIONS.md", "conventions.md", "architecture.md"}
+CONVENTION_FILES = {"architecture.md"}
 CONFIG_FILES = {
     "package.json", "pyproject.toml", "tsconfig.json", "jsconfig.json",
     "next.config.js", "next.config.mjs", "next.config.ts",

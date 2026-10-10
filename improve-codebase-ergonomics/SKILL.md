@@ -39,7 +39,6 @@ Read existing documentation first:
 - `UBIQUITOUS_LANGUAGE.md` at the workspace root
 - `{repo}/docs/codebase_domains.md`
 - `{repo}/docs/codebase_architecture.md`
-- `{repo}/CONVENTIONS.md` when present
 
 If any of these files don't exist, proceed silently — don't flag their absence or suggest creating them upfront.
 
@@ -79,6 +78,6 @@ Doc updates happen only when the user has asked for implementation or explicitly
 
 - **Naming a canonical location or usage path after a domain concept not in `UBIQUITOUS_LANGUAGE.md`?** Add the term there only when it is meaningful to product/business/domain experts, preserve the existing table style, and update the last-updated date.
 - **Sharpening a fuzzy domain term during the conversation?** Update `UBIQUITOUS_LANGUAGE.md` or its flagged ambiguities only with user agreement.
-- **Changing repo structure, module ownership, or architecture behaviour?** Update `{repo}/docs/codebase_domains.md`, `{repo}/docs/codebase_architecture.md`, and `{repo}/CONVENTIONS.md` when the change affects those docs.
+- **Changing repo structure, module ownership, or architecture behaviour?** Update `{repo}/docs/codebase_domains.md` and `{repo}/docs/codebase_architecture.md` when the change affects those docs.
 - **User rejects the candidate with a load-bearing reason?** Offer to record it in the relevant architecture/conventions docs only when future ergonomics reviews would otherwise re-suggest the same thing. Skip ephemeral reasons and self-evident ones.
 - **Want to explore alternative organization or usage designs for the chosen candidate?** See [ERGONOMIC-DESIGN.md](ERGONOMIC-DESIGN.md).
