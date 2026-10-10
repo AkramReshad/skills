@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Readability"
+  short_description: "Find comprehension friction and improve local reasoning"
+  default_prompt: "Use $improve-codebase-readability to find codebase readability opportunities grounded in representative reading tasks."
+
+policy:
+  allow_implicit_invocation: false
