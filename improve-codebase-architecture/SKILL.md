@@ -38,7 +38,6 @@ Read existing documentation first:
 - `{repo}/docs/codebase_domains.md`
 - `{repo}/docs/codebase_architecture.md`
 - `{repo}/CONVENTIONS.md` when present
-- Relevant `notes/` for the repo or workspace
 
 If any of these files don't exist, proceed silently — don't flag their absence or suggest creating them upfront.
 

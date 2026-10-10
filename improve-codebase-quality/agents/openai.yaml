@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Quality"
+  short_description: "Review every domain and validate all code issues"
+  default_prompt: "Use $improve-codebase-quality to review every domain, retain all validated issues, and add fix guidance in local code_review files."
+
+policy:
+  allow_implicit_invocation: false
