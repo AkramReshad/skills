@@ -1,0 +1,7 @@
+interface:
+  display_name: "Maintain Test Suite"
+  short_description: "Aggressively prune redundant automated tests"
+  default_prompt: "Use $maintain-test-suite to audit and aggressively prune this test suite."
+
+policy:
+  allow_implicit_invocation: false
