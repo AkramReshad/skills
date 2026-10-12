@@ -1,0 +1,4 @@
+interface:
+  display_name: "UX Rules"
+  short_description: "Consistent, high-quality platform UI and UX"
+  default_prompt: "Use $ux-rules to design and verify this UI change as a reusable product-system improvement."
