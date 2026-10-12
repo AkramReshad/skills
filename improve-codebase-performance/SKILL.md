@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-performance
-description: Find performance improvement opportunities in a codebase, informed by project domain language in UBIQUITOUS_LANGUAGE.md and repo architecture docs such as docs/codebase_domains.md and docs/codebase_architecture.md. Use when the user wants to improve latency, throughput, scalability, query or I/O efficiency, build or test speed, or resource use without needing to identify the bottleneck first.
+description: "Find performance improvement opportunities in a codebase, informed by project domain language in UBIQUITOUS_LANGUAGE.md and repo architecture docs such as docs/codebase_domains.md and docs/codebase_architecture.md. Use only when explicitly invoked as $improve-codebase-performance or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Improve Codebase Performance

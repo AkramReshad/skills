@@ -1,6 +1,6 @@
 ---
 name: test-creator
-description: Create, revise, and update high-signal automated tests for application behavior. Use when implementation work needs new regression coverage, existing tests must change with an intentional contract change, or a failing test needs correction. Do not use for suite-wide audits, pruning, or deletion campaigns; use test-suite-maintainer instead.
+description: Create, revise, and update high-signal automated tests for application behavior. Use when implementation work needs new regression coverage, existing tests must change with an intentional contract change, or a failing test needs correction. Do not use for suite-wide audits, pruning, or deletion campaigns; use maintain-test-suite instead.
 ---
 
 # Test Creator

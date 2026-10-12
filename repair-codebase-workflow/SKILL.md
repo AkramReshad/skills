@@ -1,6 +1,6 @@
 ---
 name: repair-codebase-workflow
-description: "Orchestrate codebase repairs end to end: run improve-codebase-quality across every domain, write an ordered issue manifest, assign one planning subagent per nonempty domain/severity group, then implement each accepted plan sequentially through a fresh implementer, full repository gate, independent review, finding resolution, closure review, and a scoped repair(domain) commit. Use when the user asks to find and fix codebase quality issues with delegated planning and implementation, or asks to execute comprehensive domain review findings as a controlled multi-agent workflow."
+description: "Orchestrate codebase repairs end to end: run improve-codebase-quality across every domain, write an ordered issue manifest, assign one planning subagent per nonempty domain/severity group, then implement each accepted plan sequentially through a fresh implementer, full repository gate, independent review, finding resolution, closure review, and a scoped repair(domain) commit. Use only when explicitly invoked as $repair-codebase-workflow or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Repair Codebase Workflow

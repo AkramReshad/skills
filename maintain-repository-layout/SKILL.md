@@ -1,6 +1,6 @@
 ---
 name: maintain-repository-layout
-description: Audit and reorganize repository paths, filenames, semantic file groupings, and crowded directories. Use when repository layout cleanup, filename normalization, or structural hygiene is the primary task, or when explicitly invoked by a scheduled repository-hygiene workflow. Do not select this skill merely because ordinary implementation creates, edits, renames, moves, or deletes files.
+description: "Audit and reorganize repository paths, filenames, semantic file groupings, and crowded directories. Use only when explicitly invoked as $maintain-repository-layout or by name. Do not invoke automatically for related repository work."
 ---
 
 # Maintain Repository Layout

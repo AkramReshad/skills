@@ -1,6 +1,6 @@
 ---
 name: optimize-codebase-workflow
-description: "Orchestrate performance optimization end to end: run improve-codebase-performance, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, full repository gate, mechanism-matched performance verification, independent review, finding resolution, closure review, and a scoped optimization(domain) commit. Use when the user asks to optimize or improve codebase performance with delegated planning and implementation, or asks to execute performance-optimization proposals as a controlled multi-agent workflow."
+description: "Orchestrate performance optimization end to end: run improve-codebase-performance, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, full repository gate, mechanism-matched performance verification, independent review, finding resolution, closure review, and a scoped optimization(domain) commit. Use only when explicitly invoked as $optimize-codebase-workflow or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Optimize Codebase Workflow

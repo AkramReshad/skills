@@ -1,6 +1,6 @@
 ---
 name: deepen-codebase-workflow
-description: "Orchestrate architecture deepening end to end: run improve-codebase-architecture, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, full repository gate, independent review, finding resolution, closure review, and a scoped deepening(domain) commit. Use when the user asks to deepen, refactor, or improve a codebase architecture with delegated planning and implementation, or asks to execute architecture-deepening proposals as a controlled multi-agent workflow."
+description: "Orchestrate architecture deepening end to end: run improve-codebase-architecture, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, full repository gate, independent review, finding resolution, closure review, and a scoped deepening(domain) commit. Use only when explicitly invoked as $deepen-codebase-workflow or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Deepen Codebase Workflow

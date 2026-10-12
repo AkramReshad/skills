@@ -1,6 +1,6 @@
 ---
 name: codebase-map
-description: Create or update docs/codebase_architecture.md as a high-level map of the repository organized by logical domains. Use when asked to map repo structure, refresh an architecture doc, or keep a domain-based codebase overview current.
+description: Create or update docs/codebase_architecture.md as a high-level map of the repository organized by logical domains. Use only when explicitly invoked as $codebase-map or by name. Do not invoke automatically for repository or documentation changes.
 metadata:
   short-description: Update a repo architecture map
 ---

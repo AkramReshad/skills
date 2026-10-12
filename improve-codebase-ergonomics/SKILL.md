@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-ergonomics
-description: Find ergonomics opportunities in a codebase, informed by project domain language in UBIQUITOUS_LANGUAGE.md and repo architecture docs such as docs/codebase_domains.md and docs/codebase_architecture.md. Use when the user wants to improve code organization, discoverability, developer convenience, or the effort required to understand and correctly use the codebase.
+description: "Find ergonomics opportunities in a codebase, informed by project domain language in UBIQUITOUS_LANGUAGE.md and repo architecture docs such as docs/codebase_domains.md and docs/codebase_architecture.md. Use only when explicitly invoked as $improve-codebase-ergonomics or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Improve Codebase Ergonomics

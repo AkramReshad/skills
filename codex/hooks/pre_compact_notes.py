@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import sys
 
+from hook_activity import HookRun
+
 
 def hook_result(message=None):
     result = {"continue": True}
@@ -50,6 +52,10 @@ def conversation_from_transcript(path):
                     content = message_text(payload.get("content"))
                     if content:
                         messages.append(f"{role.upper()}:\n{content}")
+            elif record_type == "response_item" and payload.get("type") == "agent_message":
+                content = message_text(payload.get("content"))
+                if content:
+                    messages.append(f"ASSISTANT ({payload.get('author', 'agent')}):\n{content}")
             elif record_type == "event_msg":
                 role = {"user_message": "USER", "agent_message": "ASSISTANT"}.get(
                     payload.get("type")
@@ -60,21 +66,9 @@ def conversation_from_transcript(path):
     return messages or event_messages
 
 
-def is_subagent_transcript(path):
-    with path.open(encoding="utf-8", errors="replace") as transcript:
-        for line in transcript:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if record.get("type") == "session_meta":
-                payload = record.get("payload")
-                return isinstance(payload, dict) and bool(payload.get("parent_thread_id"))
-    return False
-
-
-def run_note_pass(cwd, conversation):
+def run_note_pass(cwd, conversation, activity):
     from openai_codex import Codex, CodexConfig, Sandbox, SkillInput, TextInput
+    from openai_codex.generated.v2_all import FileChangeThreadItem, ItemCompletedNotification, PatchApplyStatus, TurnCompletedNotification, TurnStatus
 
     codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
     skill_path = codex_home / "skills/workspace-notes/SKILL.md"
@@ -84,14 +78,37 @@ def run_note_pass(cwd, conversation):
             ephemeral=True,
             sandbox=Sandbox.workspace_write,
         )
-        thread.run([
+        activity.update(phase="writing_notes", agent_thread_id=thread.id)
+        created, modified, deleted = set(), set(), set()
+        activity.update(count_source="sdk_file_change_events", created_count=0, created_notes=[], modified_notes=[], deleted_notes=[])
+        turn = thread.turn([
             SkillInput(name="workspace-notes", path=str(skill_path)),
             TextInput(text="$workspace-notes\n\n" + "\n\n".join(conversation)),
         ])
+        for event in turn.stream():
+            payload = event.payload
+            if isinstance(payload, ItemCompletedNotification):
+                item = payload.item.root
+                if isinstance(item, FileChangeThreadItem) and item.status == PatchApplyStatus.completed:
+                    for change in item.changes:
+                        path = (cwd / change.path).resolve()
+                        if path.suffix != ".md" or not path.is_relative_to(cwd / "notes"):
+                            continue
+                        kind = change.kind.root.type
+                        {"add": created, "update": modified, "delete": deleted}[kind].add(str(path))
+                    activity.update(created_count=len(created), created_notes=sorted(created),
+                                    modified_notes=sorted(modified), deleted_notes=sorted(deleted))
+            elif isinstance(payload, TurnCompletedNotification):
+                if payload.turn.status == TurnStatus.failed:
+                    raise RuntimeError(payload.turn.error.message if payload.turn.error else "Note capture failed")
+                if payload.turn.status != TurnStatus.completed:
+                    raise RuntimeError(f"Note capture ended with status {payload.turn.status.value}")
+        return len(created)
 
 
-def main():
+def main(activity):
     event = json.load(sys.stdin)
+    activity.event(event)
     if event.get("hook_event_name") != "PreCompact":
         raise RuntimeError("Unexpected hook event")
     cwd = Path(event["cwd"]).expanduser().resolve(strict=True)
@@ -101,22 +118,25 @@ def main():
     transcript = Path(transcript_value).expanduser().resolve(strict=True)
     if not transcript.is_file():
         raise RuntimeError("Transcript is unavailable")
-    if is_subagent_transcript(transcript):
-        hook_result()
-        return
     notes_dir = cwd / "notes"
     if not notes_dir.resolve().is_relative_to(cwd):
         raise RuntimeError("Workspace notes directory resolves outside the workspace")
+    activity.update(phase="reading_transcript", notes_directory=str(notes_dir))
     conversation = conversation_from_transcript(transcript)
+    activity.update(message_count=len(conversation))
     if not conversation:
+        activity.finish("skipped", reason="no_conversation_messages")
         hook_result("No user or assistant messages could be extracted from the transcript")
         return
-    run_note_pass(cwd, conversation)
+    created_count = run_note_pass(cwd, conversation, activity)
+    activity.finish(reason="notes_created" if created_count else "no_note_creations_reported")
     hook_result()
 
 
 if __name__ == "__main__":
+    activity = HookRun("PreCompact")
     try:
-        main()
+        main(activity)
     except Exception as exc:
+        activity.finish("error", error=str(exc))
         hook_result(str(exc))

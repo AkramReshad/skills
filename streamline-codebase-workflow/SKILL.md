@@ -1,6 +1,6 @@
 ---
 name: streamline-codebase-workflow
-description: "Orchestrate codebase ergonomics improvements end to end: run improve-codebase-ergonomics, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, representative-task verification, full repository gate, independent review, finding resolution, closure review, and a scoped ergonomics(domain) commit. Use when the user asks to streamline or improve codebase ergonomics with delegated planning and implementation, or asks to execute ergonomics proposals as a controlled multi-agent workflow."
+description: "Orchestrate codebase ergonomics improvements end to end: run improve-codebase-ergonomics, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, representative-task verification, full repository gate, independent review, finding resolution, closure review, and a scoped ergonomics(domain) commit. Use only when explicitly invoked as $streamline-codebase-workflow or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Streamline Codebase Workflow

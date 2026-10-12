@@ -2,3 +2,6 @@ interface:
   display_name: "Test Creator"
   short_description: "Create and revise high-signal automated tests"
   default_prompt: "Use $test-creator to add focused tests for this behavior change."
+
+policy:
+  allow_implicit_invocation: true

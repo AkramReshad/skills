@@ -13,6 +13,8 @@ import urllib.request
 
 import certifi
 
+from hook_activity import HookRun
+
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
 RELEVANCE_CUTOFF = 0.75
@@ -56,19 +58,6 @@ def conversation_from_transcript(path):
                 if role and isinstance(content, str) and content.strip():
                     event_messages.append({"role": role, "text": content.strip()})
     return messages or event_messages
-
-
-def is_subagent_transcript(path):
-    with path.open(encoding="utf-8", errors="replace") as transcript:
-        for line in transcript:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if record.get("type") == "session_meta":
-                payload = record.get("payload")
-                return isinstance(payload, dict) and bool(payload.get("parent_thread_id"))
-    return False
 
 
 def state_path(event, cwd):
@@ -155,19 +144,19 @@ def typesafe_request(messages, notes, api_key):
     return relevant
 
 
-def main():
+def main(activity):
     event = json.load(sys.stdin)
+    activity.event(event)
     hook_event = event.get("hook_event_name")
     if hook_event != "UserPromptSubmit":
         raise RuntimeError("Unexpected hook event")
     cwd = Path(event["cwd"]).expanduser().resolve(strict=True)
     transcript_path = event.get("transcript_path")
-    if transcript_path and is_subagent_transcript(Path(transcript_path).expanduser()):
-        print(json.dumps({"continue": True}))
-        return
     state = state_path(event, cwd)
     notes_dir = cwd / "notes"
+    activity.update(notes_directory=str(notes_dir), phase="reading_notes")
     if not notes_dir.is_dir():
+        activity.finish("skipped", reason="no_notes_directory")
         print(json.dumps({"continue": True}))
         return
     already_included = included_notes(state)
@@ -176,7 +165,9 @@ def main():
         for path in sorted(notes_dir.glob("*.md"))
         if path.name not in already_included
     ]
+    activity.update(candidate_count=len(notes), already_included_count=len(already_included))
     if not notes:
+        activity.finish("skipped", reason="no_unincluded_notes")
         print(json.dumps({"continue": True}))
         return
     api_key = typesafe_api_key()
@@ -187,11 +178,12 @@ def main():
     if isinstance(prompt, str) and prompt.strip():
         if not messages or messages[-1] != {"role": "user", "text": prompt.strip()}:
             messages.append({"role": "user", "text": prompt.strip()})
+    activity.update(phase="checking_relevance", message_count=len(messages))
     relevant = typesafe_request(messages, notes, api_key)
     if relevant:
         save_included_notes(state, already_included | {path.name for path, _ in relevant})
-    context = "\n\n".join(
-        f"Workspace note: {path.name}\n{content}" for path, content in relevant
+    context = "\n".join(
+        f"Read notes/{path.name}" for path, _ in relevant
     )
     result = {"continue": True}
     if context:
@@ -199,11 +191,16 @@ def main():
             "hookEventName": "UserPromptSubmit",
             "additionalContext": context,
         }
+    activity.finish(reason="context_returned" if context else "no_relevant_notes",
+                    selected_notes=[str(path) for path, _ in relevant],
+                    selected_count=len(relevant), context_characters=len(context))
     print(json.dumps(result))
 
 
 if __name__ == "__main__":
+    activity = HookRun("UserPromptSubmit")
     try:
-        main()
+        main(activity)
     except Exception as exc:
+        activity.finish("error", error=str(exc))
         print(json.dumps({"continue": True, "systemMessage": f"Workspace note retrieval: {exc}"}))
