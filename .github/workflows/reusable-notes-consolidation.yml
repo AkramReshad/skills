@@ -2,6 +2,11 @@ name: Consolidate workspace notes
 
 on:
   workflow_call:
+    inputs:
+      format_notes:
+        description: Format Markdown notes using the caller's .github/actions/setup-web toolchain before committing.
+        type: boolean
+        default: false
     secrets:
       TYPESAFE_API_KEY:
         required: true
@@ -62,6 +67,12 @@ jobs:
         with:
           path: ${{ runner.temp }}/codex-auth.enc
           key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Setup notes formatter
+        if: inputs.format_notes
+        uses: ./.github/actions/setup-web
+      - name: Format workspace notes
+        if: inputs.format_notes
+        run: pnpm exec prettier --write "notes/**/*.md"
       - name: Commit note changes
         run: |
           if [[ -n "$(git status --porcelain -- notes)" ]]; then
