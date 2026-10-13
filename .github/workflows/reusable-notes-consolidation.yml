@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       format_notes:
-        description: Format Markdown notes using the caller's .github/actions/setup-web toolchain before committing.
+        description: Instruct the rewrite agent to run Prettier using the caller's .github/actions/setup-web toolchain.
         type: boolean
         default: false
     secrets:
@@ -53,10 +53,13 @@ jobs:
         env:
           CODEX_AUTH_JSON: ${{ secrets.CODEX_AUTH_JSON }}
         run: node .note_tools/scripts/codex-auth-state.mjs restore
+      - name: Setup notes formatter
+        if: inputs.format_notes
+        uses: ./.github/actions/setup-web
       - name: Consolidate notes added yesterday
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
-        run: python .note_tools/scripts/consolidate-notes.py
+        run: python .note_tools/scripts/consolidate-notes.py ${{ inputs.format_notes && '--format-notes' || '' }}
       - name: Encrypt refreshed Codex login
         if: always() && steps.auth.outputs.key != ''
         env:
@@ -67,12 +70,6 @@ jobs:
         with:
           path: ${{ runner.temp }}/codex-auth.enc
           key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Setup notes formatter
-        if: inputs.format_notes
-        uses: ./.github/actions/setup-web
-      - name: Format workspace notes
-        if: inputs.format_notes
-        run: pnpm exec prettier --write "notes/**/*.md"
       - name: Commit note changes
         run: |
           if [[ -n "$(git status --porcelain -- notes)" ]]; then
