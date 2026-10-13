@@ -17,7 +17,7 @@ from hook_activity import HookRun
 
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
-RELEVANCE_CUTOFF = 0.75
+RELEVANCE_CUTOFF = 0.85
 
 
 def message_text(content):
