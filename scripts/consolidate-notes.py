@@ -103,10 +103,10 @@ def evaluate(new_note, existing, skill):
     return result
 
 
-def rewrite_notes(sources, skill, format_notes=False):
+def rewrite_notes(sources, skill, format_notes=False, formatter_directory="."):
     tool_instructions = "Do not use tools."
     if format_notes:
-        formatter = shlex.join(["pnpm", "--dir", str(Path.cwd().resolve()), "exec", "prettier", "--stdin-filepath"])
+        formatter = shlex.join(["pnpm", "--dir", str(Path(formatter_directory).resolve()), "exec", "prettier", "--stdin-filepath"])
         tool_instructions = (
             "Before returning JSON, use the shell tool to run the repository's installed "
             "Prettier on every replacement note. Run " + formatter + " followed by "
@@ -147,7 +147,7 @@ def rewrite_notes(sources, skill, format_notes=False):
     return replacements
 
 
-def consolidate(day, format_notes=False):
+def consolidate(day, format_notes=False, formatter_directory="."):
     active_commits, additions = added_notes_for_day(day)
     if not active_commits:
         print(f"No commits to the default branch on {day}; nothing to process")
@@ -182,7 +182,10 @@ def consolidate(day, format_notes=False):
             existing_paths.add(new_path)
             continue
         source_paths = [new_path, *related]
-        replacements = rewrite_notes({path: current[path] for path in source_paths}, skill, format_notes=format_notes)
+        replacements = rewrite_notes(
+            {path: current[path] for path in source_paths}, skill,
+            format_notes=format_notes, formatter_directory=formatter_directory,
+        )
         for path in source_paths:
             del current[path]
             existing_paths.discard(path)
@@ -200,9 +203,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--day", help="Local date to process, YYYY-MM-DD (default: yesterday)")
     parser.add_argument("--format-notes", action="store_true", help="Instruct the rewrite agent to run the installed Prettier on replacement notes")
+    parser.add_argument("--formatter-directory", default=".", help="Repository directory containing the installed Prettier")
     args = parser.parse_args()
     day = datetime.strptime(args.day, "%Y-%m-%d").date() if args.day else datetime.now(TIMEZONE).date() - timedelta(days=1)
-    consolidate(day, format_notes=args.format_notes)
+    consolidate(day, format_notes=args.format_notes, formatter_directory=args.formatter_directory)
 
 
 if __name__ == "__main__":

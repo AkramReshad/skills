@@ -7,6 +7,10 @@ on:
         description: Instruct the rewrite agent to run Prettier using the caller's .github/actions/setup-web toolchain.
         type: boolean
         default: false
+      formatter_directory:
+        description: Repository directory containing the installed Prettier.
+        type: string
+        default: '.'
     secrets:
       TYPESAFE_API_KEY:
         required: true
@@ -59,7 +63,11 @@ jobs:
       - name: Consolidate notes added yesterday
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
-        run: python .note_tools/scripts/consolidate-notes.py ${{ inputs.format_notes && '--format-notes' || '' }}
+          NOTES_FORMATTER_DIRECTORY: ${{ inputs.formatter_directory }}
+        run: >-
+          python .note_tools/scripts/consolidate-notes.py
+          ${{ inputs.format_notes && '--format-notes' || '' }}
+          --formatter-directory "$NOTES_FORMATTER_DIRECTORY"
       - name: Encrypt refreshed Codex login
         if: always() && steps.auth.outputs.key != ''
         env:
