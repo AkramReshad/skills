@@ -79,11 +79,13 @@ jobs:
           path: ${{ runner.temp }}/codex-auth.enc
           key: codex-auth-${{ steps.auth.outputs.key }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Commit note changes
-        run: |
-          if [[ -n "$(git status --porcelain -- notes)" ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -- notes
-            git commit -m "Consolidate workspace notes"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
+        id: commit_notes
+        run: bash .note_tools/scripts/commit-consolidated-notes.sh
+      - name: Retain generated notes after a publish failure
+        if: failure() && steps.commit_notes.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: consolidated-notes-patch-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/consolidated-notes.patch
+          retention-days: 7
+          if-no-files-found: error

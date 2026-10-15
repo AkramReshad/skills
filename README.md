@@ -49,3 +49,16 @@ On another machine, `git pull --ff-only` updates the active skills immediately. 
 Keep client-neutral instructions in `SKILL.md`. Client-specific metadata can remain in optional files such as `agents/openai.yaml`; clients that do not use those files ignore them.
 
 The open Agent Skills specification defines the portable core: YAML frontmatter with `name` and `description`, followed by Markdown instructions, with optional `scripts`, `references`, and `assets` directories.
+
+## Overnight workspace notes
+
+The shared notes workflow fetches and rebases onto the latest target branch before publishing its
+consolidation commit. It retries a failed push up to three times. Conflicting note edits stop the
+job without overwriting newer work; a `consolidated-notes-patch-<attempt>` artifact retains the generated
+patch for seven days so the rewrite can be recovered.
+
+Run the publishing regression tests with:
+
+```bash
+python3 -m unittest discover -s scripts/tests -v
+```
