@@ -15,7 +15,7 @@ Never use eyebrow headers.
 
 - Start with the user's workflow and decision. Put useful data and primary actions first; treat coverage, latency, and availability as UX concerns.
 - Use the user's terminology. Add concepts, controls, and methods only when they serve the requested task. Answer direct questions about the interface before changing it.
-- Give each visible element a purpose. Favor scanability over repeated context, filler copy, and competing views. Put explanation where it aids interpretation.
+- Assume the intended user is competent and retains context across the screen. Establish the subject and measure in the page or section heading. Every subsequent label, legend entry, status, or explanation must contribute information needed for interpretation or action. Repeat context only when necessary to distinguish separate subjects or series. Include explanations only when they resolve a specific ambiguity or support a decision.
 - Prioritize decision-bearing values and classifications. Align comparable readings in labeled columns; preserve usable readings and meaningful states. Keep summaries focused on decision-bearing data; omit routine observation metadata, freshness decorations, and verbose ranges. Use standard, concise labels; show dates when the date itself is the event or decision-bearing value. Secondary text is rare. Remove explainers, repeated timestamps, instructional footers, and redundant subtitles; render essential context as readable labeled data. During screenshot review, verify that the data catches the eye first across every page touched by the task.
 - Treat a correction as evidence of a broader pattern. Check analogous copy and interactions across the affected flow, then fix the pattern.
 
@@ -52,6 +52,7 @@ Maintain platform consistency in typography, spacing, density, icon semantics, a
 
 ## Visual acceptance
 
+- Review visible copy across the assembled screen. Reject duplicated meaning across headings, metrics, legends, statuses, and explanatory text—including repetition phrased differently. For every repeated phrase or explanation, identify the additional information it contributes; remove it when there is none.
 - Review the whole affected view, including hierarchy, density, spacing, typography, alignment, balanced grids, control sizing, and interaction feedback.
 - Removing or changing an element includes rebalancing the remaining composition. Resolve awkward gaps, oversized controls, repeated headings, and misaligned values introduced or exposed by the change.
 - Check analogous shared views and fix the pattern within the affected flow. Preserve established visual treatments and explicit user preferences unless the user changes them.
