@@ -43,17 +43,24 @@ Invocation authorizes the subagents required by this workflow. Respect repositor
 ## Phase 1: Discover opportunities
 
 1. Apply `improve-codebase-architecture` personally as the main agent.
-2. Explore the codebase and apply the deletion test. Do not delegate the root architectural judgment.
-3. Write one opportunity manifest containing:
-   - ordered candidates;
+2. Establish the requested domain's major responsibilities, module boundaries, and dependency relationships before selecting implementation work. Use that scope to guide exploration. Finding a worthwhile opportunity does not complete discovery.
+3. Explore the codebase and apply the deletion test. Do not delegate the root architectural judgment.
+4. Keep one opportunity manifest as a record of the search, containing:
+   - areas examined, with concrete code, dependency, or deletion-test evidence;
+   - credible candidates, with reasons for accepting, rejecting, or deferring each;
+   - material areas or leads that remain unexplored;
    - files and domains involved;
    - problem, proposed deepening, locality/leverage, and test impact;
    - stable domain slug for each candidate;
-   - solution-plan path and workflow status.
-4. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as manifest statuses.
-5. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all candidates.
+   - solution-plan path and workflow status for accepted candidates.
+5. Discovery is complete when the scoped areas have been examined and meaningful leads have been investigated sufficiently to support candidate selection. Unexplored areas remain explicit gaps; they cannot be treated as having no worthwhile opportunities.
+6. Select and order accepted candidates after completing that survey. One accepted opportunity is valid when the discovery record supports that result.
+7. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as workflow statuses for accepted candidates.
+8. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all accepted candidates.
 
 ## Phase 2: Produce N solution plans
+
+Begin solution planning only after the Phase 1 discovery completion gate is satisfied.
 
 For `N` accepted candidates:
 
@@ -147,6 +154,7 @@ Severity meanings:
 
 Finish only when every accepted plan has its own committed implementation and:
 
+- discovery coverage and candidate dispositions are verified against the Phase 1 completion gate;
 - all critical/high findings are closed;
 - all medium/low findings have recorded dispositions;
 - every final tree passed its full gate before commit;
