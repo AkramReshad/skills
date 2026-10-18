@@ -83,7 +83,12 @@ def run_note_pass(cwd, conversation, activity):
         activity.update(count_source="sdk_file_change_events", created_count=0, created_notes=[], modified_notes=[], deleted_notes=[])
         turn = thread.turn([
             SkillInput(name="workspace-notes", path=str(skill_path)),
-            TextInput(text="$workspace-notes\n\n" + "\n\n".join(conversation)),
+            TextInput(text=(
+                "$workspace-notes\n\n"
+                "After writing the notes, run Prettier with --write on the note files you created or updated, "
+                "using the workspace's Prettier configuration.\n\n"
+                + "\n\n".join(conversation)
+            )),
         ])
         for event in turn.stream():
             payload = event.payload
