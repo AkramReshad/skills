@@ -44,18 +44,25 @@ Invocation authorizes the subagents required by this workflow. Respect repositor
 ## Phase 1: Discover opportunities
 
 1. Apply `improve-codebase-performance` personally as the main agent.
-2. Explore the codebase and apply its amplification, scaling, redundant-work, lifecycle, round-trip, work-conservation, critical-path, reuse, and resource-shape tests. Do not delegate the root performance judgment.
-3. Write one opportunity manifest containing:
-   - ordered candidates;
+2. Establish the requested domain's major workloads and cost-bearing areas before selecting implementation work. Use that scope to guide exploration. Finding a worthwhile opportunity does not complete discovery.
+3. Explore the codebase and apply its amplification, scaling, redundant-work, lifecycle, round-trip, work-conservation, critical-path, reuse, and resource-shape tests. Do not delegate the root performance judgment.
+4. Keep one opportunity manifest as a record of the search, containing:
+   - areas examined, with concrete code, cost-model, or measurement evidence;
+   - credible candidates, with reasons for accepting, rejecting, or deferring each;
+   - material areas or leads that remain unexplored;
    - files and domains involved;
    - representative workload, cost center, evidence category, cost model, proposed optimization, and invariants;
    - mechanism-matched verification surface and test impact;
    - stable domain slug for each candidate;
-   - solution-plan path and workflow status.
-4. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as manifest statuses.
-5. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all candidates.
+   - solution-plan path and workflow status for accepted candidates.
+5. Discovery is complete when the scoped areas have been examined and meaningful leads have been investigated sufficiently to support candidate selection. Unexplored areas remain explicit gaps; they cannot be treated as having no worthwhile opportunities.
+6. Select and order accepted candidates after completing that survey. One accepted opportunity is valid when the discovery record supports that result.
+7. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as workflow statuses for accepted candidates.
+8. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all accepted candidates.
 
 ## Phase 2: Produce N solution plans
+
+Begin solution planning only after the Phase 1 discovery completion gate is satisfied.
 
 For `N` accepted candidates:
 
@@ -151,6 +158,7 @@ Severity meanings:
 
 Finish only when every accepted plan has its own committed implementation and:
 
+- discovery coverage and candidate dispositions are verified against the Phase 1 completion gate;
 - the targeted cost reduction is verified with evidence matched to its mechanism;
 - all stated invariants remain satisfied;
 - all critical/high findings are closed;
