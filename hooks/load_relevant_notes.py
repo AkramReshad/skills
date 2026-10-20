@@ -71,10 +71,12 @@ def main(client, activity):
 
 
 if __name__ == "__main__":
-    client = clients.from_arguments()
-    activity = HookRun("UserPromptSubmit", client.NAME)
+    activity = None
     try:
+        client = clients.from_arguments(sys.argv[1:])
+        activity = HookRun("UserPromptSubmit", client.NAME)
         main(client, activity)
     except Exception as exc:
-        activity.finish("error", error=str(exc))
+        if activity:
+            activity.finish("error", error=str(exc))
         print(json.dumps({"continue": True, "systemMessage": f"Workspace note retrieval: {exc}"}))

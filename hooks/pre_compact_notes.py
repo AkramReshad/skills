@@ -43,10 +43,12 @@ def main(client, activity):
 
 
 if __name__ == "__main__":
-    client = clients.from_arguments()
-    activity = HookRun("PreCompact", client.NAME)
+    activity = None
     try:
+        client = clients.from_arguments(sys.argv[1:])
+        activity = HookRun("PreCompact", client.NAME)
         main(client, activity)
     except Exception as exc:
-        activity.finish("error", error=str(exc))
+        if activity:
+            activity.finish("error", error=str(exc))
         hook_result(str(exc))

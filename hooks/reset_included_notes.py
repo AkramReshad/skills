@@ -19,6 +19,6 @@ def main(client):
 
 if __name__ == "__main__":
     try:
-        main(clients.from_arguments())
+        main(clients.from_arguments(sys.argv[1:]))
     except Exception as exc:
         print(json.dumps({"continue": True, "systemMessage": f"Workspace note reset: {exc}"}))

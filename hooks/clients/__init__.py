@@ -9,9 +9,7 @@ def load(name):
     return importlib.import_module(f"clients.{name}")
 
 
-def from_arguments():
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--client", choices=NAMES, required=True)
-    return load(parser.parse_args().client)
+def from_arguments(arguments):
+    if len(arguments) != 2 or arguments[0] != "--client":
+        raise ValueError(f"Expected --client {{{','.join(NAMES)}}}, got: {' '.join(arguments) or 'no arguments'}")
+    return load(arguments[1])
