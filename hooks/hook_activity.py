@@ -25,12 +25,12 @@ def connect():
 
 
 class HookRun:
-    def __init__(self, hook):
+    def __init__(self, hook, client):
         self.id = uuid.uuid4().hex
-        self.details = {}
+        self.details = {"client": client}
         with connect() as db:
             db.execute("INSERT INTO hook_runs (id, hook, started_at, status, details) VALUES (?, ?, ?, ?, ?)",
-                       (self.id, hook, time.time(), "running", "{}"))
+                       (self.id, hook, time.time(), "running", json.dumps(self.details)))
 
     def event(self, event):
         with connect() as db:

@@ -7,66 +7,26 @@ from pathlib import Path
 import sys
 import tempfile
 
+import clients
 from hook_activity import HookRun
 from note_relevance import included_notes, save_included_notes, typesafe_api_key, typesafe_request
 
 
-def message_text(content):
-    if not isinstance(content, list):
-        return ""
-    return "\n".join(
-        item["text"]
-        for item in content
-        if isinstance(item, dict)
-        and item.get("type") in {"input_text", "output_text", "text"}
-        and isinstance(item.get("text"), str)
-    ).strip()
-
-
-def conversation_from_transcript(path):
-    messages = []
-    event_messages = []
-    with path.open(encoding="utf-8", errors="replace") as transcript:
-        for line in transcript:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            payload = record.get("payload")
-            if not isinstance(payload, dict):
-                continue
-            if record.get("type") == "response_item" and payload.get("type") == "message":
-                role = payload.get("role")
-                if role in {"user", "assistant"}:
-                    content = message_text(payload.get("content"))
-                    if content:
-                        messages.append({"role": role, "text": content})
-            elif record.get("type") == "event_msg":
-                role = {"user_message": "user", "agent_message": "assistant"}.get(
-                    payload.get("type")
-                )
-                content = payload.get("message")
-                if role and isinstance(content, str) and content.strip():
-                    event_messages.append({"role": role, "text": content.strip()})
-    return messages or event_messages
-
-
-def state_path(event, cwd):
+def state_path(client, event, cwd):
     session_id = event["session_id"]
     identifier = hashlib.sha256(f"{session_id}\n{cwd}".encode("utf-8")).hexdigest()
-    directory = Path(tempfile.gettempdir()) / f"codex_note_context_{os.getuid()}"
+    directory = Path(tempfile.gettempdir()) / f"{client.NAME}_note_context_{os.getuid()}"
     return directory / f"{identifier}.json"
 
 
-def main(activity):
+def main(client, activity):
     event = json.load(sys.stdin)
     activity.event(event)
-    hook_event = event.get("hook_event_name")
-    if hook_event != "UserPromptSubmit":
+    if event.get("hook_event_name") != "UserPromptSubmit":
         raise RuntimeError("Unexpected hook event")
     cwd = Path(event["cwd"]).expanduser().resolve(strict=True)
     transcript_path = event.get("transcript_path")
-    state = state_path(event, cwd)
+    state = state_path(client, event, cwd)
     notes_dir = cwd / "notes"
     activity.update(notes_directory=str(notes_dir), phase="reading_notes")
     if not notes_dir.is_dir():
@@ -87,7 +47,8 @@ def main(activity):
     api_key = typesafe_api_key()
     if not transcript_path:
         raise RuntimeError("No transcript was provided")
-    messages = conversation_from_transcript(Path(transcript_path).expanduser())
+    transcript = Path(transcript_path).expanduser()
+    messages = client.conversation_from_transcript(transcript) if transcript.is_file() else []
     prompt = event.get("prompt")
     if isinstance(prompt, str) and prompt.strip():
         if not messages or messages[-1] != {"role": "user", "text": prompt.strip()}:
@@ -96,9 +57,7 @@ def main(activity):
     relevant = typesafe_request(messages, notes, api_key)
     if relevant:
         save_included_notes(state, already_included | {path.name for path, _ in relevant})
-    context = "\n".join(
-        f"Read notes/{path.name}" for path, _ in relevant
-    )
+    context = "\n".join(f"Read notes/{path.name}" for path, _ in relevant)
     result = {"continue": True}
     if context:
         result["hookSpecificOutput"] = {
@@ -112,9 +71,10 @@ def main(activity):
 
 
 if __name__ == "__main__":
-    activity = HookRun("UserPromptSubmit")
+    client = clients.from_arguments()
+    activity = HookRun("UserPromptSubmit", client.NAME)
     try:
-        main(activity)
+        main(client, activity)
     except Exception as exc:
         activity.finish("error", error=str(exc))
         print(json.dumps({"continue": True, "systemMessage": f"Workspace note retrieval: {exc}"}))

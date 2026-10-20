@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install Codex SDK
-        run: pip install -r "$GITHUB_WORKSPACE/agent_tools/codex/hooks/requirements.txt"
+        run: pip install -r "$GITHUB_WORKSPACE/agent_tools/codex/maintenance/requirements.txt"
       - name: Identify Codex login state
         id: auth
         env:

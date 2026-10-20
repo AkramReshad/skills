@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/pre_compact_notes.py",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/pre_compact_notes.py --client claude",
             "timeout": 600,
             "statusMessage": "Saving workspace notes"
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/load_relevant_notes.py",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/load_relevant_notes.py --client claude",
             "timeout": 150,
             "statusMessage": "Loading relevant workspace notes"
           }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/reset_included_notes.py",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/reset_included_notes.py --client claude",
             "timeout": 10,
             "statusMessage": "Resetting included workspace notes"
           }

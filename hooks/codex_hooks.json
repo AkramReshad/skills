@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/pre_compact_notes.py",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/pre_compact_notes.py --client codex",
             "timeout": 600,
             "statusMessage": "Saving workspace notes"
           }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/load_relevant_notes.py",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/load_relevant_notes.py --client codex",
             "timeout": 150,
             "statusMessage": "Loading relevant workspace notes",
             "additionalContextLimit": 0
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/reset_included_notes.py",
+            "command": "~/.codex/hooks/.venv/bin/python ~/.codex/hooks/reset_included_notes.py --client codex",
             "timeout": 10,
             "statusMessage": "Resetting included workspace notes"
           }
