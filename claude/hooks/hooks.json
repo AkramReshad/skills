@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/pre_compact_notes.py",
+            "timeout": 600,
+            "statusMessage": "Saving workspace notes"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/load_relevant_notes.py",
+            "timeout": 150,
+            "statusMessage": "Loading relevant workspace notes"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/.venv/bin/python ~/.claude/hooks/reset_included_notes.py",
+            "timeout": 10,
+            "statusMessage": "Resetting included workspace notes"
+          }
+        ]
+      }
+    ]
+  }
+}
