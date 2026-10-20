@@ -51,15 +51,11 @@ def typesafe_request(messages, notes, api_key):
         f"note_{index}": {
             "type": "noul",
             "instructions": {
-                "question": "Would including this note give the assistant useful context for answering the final user message in `state.messages` or continuing the active task?",
-                "note": {"filename": path.name, "text": content},
-            },
-            "criteria": {
-                "true": "The note contains a specific fact, preference, decision, or learning that could help with the current response or task.",
-                "false": "The note offers no useful context for the current response or task, even if it shares a broad topic.",
+                "question": "Would including this note give the assistant useful context for answering the final user message in `state.messages`?",
+                "note": content,
             },
         }
-        for index, (path, content) in enumerate(notes)
+        for index, (_path, content) in enumerate(notes)
     }
     body = json.dumps(
         {"model": "jev-latest", "state": {"messages": messages}, "questions": questions}
