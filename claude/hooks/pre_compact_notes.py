@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import hashlib
+import asyncio
 import json
-import os
 from pathlib import Path
-import subprocess
 import sys
 
 import shared  # noqa: F401
@@ -12,8 +10,7 @@ from claude_transcript import conversation_from_transcript
 from hook_activity import HookRun
 
 
-NOTE_PASS_TIMEOUT = 570
-NOTE_PASS_TOOLS = ["Skill", "Read", "Write", "Edit", "Glob", "Grep", "Bash(npx prettier:*)", "Bash(prettier:*)"]
+NOTE_PASS_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep", "Bash(npx prettier:*)", "Bash(prettier:*)"]
 
 
 def hook_result(message=None):
@@ -23,46 +20,51 @@ def hook_result(message=None):
     print(json.dumps(result))
 
 
-def note_snapshot(notes_dir):
-    return {
-        str(path.resolve()): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in notes_dir.glob("*.md")
-        if path.is_file()
-    }
+async def run_note_pass(cwd, conversation, activity):
+    from claude_agent_sdk import (AssistantMessage, ClaudeAgentOptions, ResultMessage, ToolResultBlock,
+                                  ToolUseBlock, UserMessage, query)
 
-
-def run_note_pass(cwd, conversation, activity):
-    notes_dir = cwd / "notes"
-    before = note_snapshot(notes_dir)
+    options = ClaudeAgentOptions(
+        cwd=str(cwd),
+        skills=["workspace-notes"],
+        allowed_tools=NOTE_PASS_TOOLS,
+        permission_mode="acceptEdits",
+        settings=json.dumps({"disableAllHooks": True}),
+        extra_args={"no-session-persistence": None},
+    )
     prompt = (
-        "Use the workspace-notes skill to capture learnings from the conversation below.\n\n"
+        "/workspace-notes\n\n"
         "After writing the notes, run Prettier with --write on the note files you created or updated, "
         "using the workspace's Prettier configuration.\n\n"
         + "\n\n".join(f"{message['role'].upper()}:\n{message['text']}" for message in conversation)
     )
-    environment = {key: value for key, value in os.environ.items() if key != "CLAUDECODE"}
-    activity.update(phase="writing_notes", count_source="notes_directory_snapshot", created_count=0,
+    activity.update(phase="writing_notes", count_source="sdk_tool_events", created_count=0,
                     created_notes=[], modified_notes=[], deleted_notes=[])
-    result = subprocess.run(
-        ["claude", "-p", "--no-session-persistence", "--settings", json.dumps({"disableAllHooks": True}),
-         "--permission-mode", "acceptEdits", "--allowedTools", *NOTE_PASS_TOOLS, "--output-format", "json"],
-        input=prompt, text=True, capture_output=True, cwd=cwd, env=environment,
-        timeout=NOTE_PASS_TIMEOUT, check=False,
-    )
-    after = note_snapshot(notes_dir)
-    created = sorted(after.keys() - before.keys())
-    modified = sorted(path for path in after.keys() & before.keys() if after[path] != before[path])
-    deleted = sorted(before.keys() - after.keys())
-    activity.update(created_count=len(created), created_notes=created,
-                    modified_notes=modified, deleted_notes=deleted)
-    try:
-        output = json.loads(result.stdout)
-    except json.JSONDecodeError:
-        output = {}
-    if result.returncode != 0 or output.get("is_error"):
-        detail = output.get("result") or result.stderr.strip() or f"exit status {result.returncode}"
-        raise RuntimeError(f"Note capture failed: {detail}")
-    activity.update(agent_session_id=output.get("session_id"), cost_usd=output.get("total_cost_usd"))
+    created, modified, pending = set(), set(), {}
+    async for message in query(prompt=prompt, options=options):
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, ToolUseBlock) and block.name in {"Write", "Edit"}:
+                    path = (cwd / block.input.get("file_path", "")).resolve()
+                    if path.suffix == ".md" and path.is_relative_to(cwd / "notes"):
+                        kind = "add" if block.name == "Write" and not path.exists() else "update"
+                        pending[block.id] = (kind, str(path))
+        elif isinstance(message, UserMessage) and isinstance(message.content, list):
+            for block in message.content:
+                if isinstance(block, ToolResultBlock) and block.tool_use_id in pending:
+                    kind, path = pending.pop(block.tool_use_id)
+                    if block.is_error:
+                        continue
+                    if kind == "add":
+                        created.add(path)
+                    elif path not in created:
+                        modified.add(path)
+            activity.update(created_count=len(created), created_notes=sorted(created),
+                            modified_notes=sorted(modified), deleted_notes=[])
+        elif isinstance(message, ResultMessage):
+            activity.update(agent_session_id=message.session_id, cost_usd=message.total_cost_usd)
+            if message.is_error:
+                raise RuntimeError(f"Note capture ended with {message.subtype}: {message.result or ''}".strip())
     return len(created)
 
 
@@ -88,7 +90,7 @@ def main(activity):
         activity.finish("skipped", reason="no_conversation_messages")
         hook_result("No user or assistant messages could be extracted from the transcript")
         return
-    created_count = run_note_pass(cwd, conversation, activity)
+    created_count = asyncio.run(run_note_pass(cwd, conversation, activity))
     activity.finish(reason="notes_created" if created_count else "no_note_creations_reported")
     hook_result()
 
