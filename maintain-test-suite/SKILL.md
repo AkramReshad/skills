@@ -35,8 +35,6 @@ Do not:
 - modify production code
 - broaden the task into implementation or architecture work
 
-If the review reveals important untested behavior, report it separately; do not expand this skill into test creation.
-
 ## Establish the Baseline
 
 1. Read repository instructions, test configuration, relevant domain documentation, and the production boundaries represented by the suite.
