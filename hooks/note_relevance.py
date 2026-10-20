@@ -10,6 +10,7 @@ import certifi
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
 RELEVANCE_CUTOFF = 0.85
+NOTE_BATCH_SIZE = 100
 
 
 def included_notes(path):
@@ -46,7 +47,7 @@ def typesafe_api_key():
     return result.stdout.strip()
 
 
-def typesafe_request(messages, notes, api_key):
+def typesafe_batch(messages, notes, api_key):
     questions = {
         f"note_{index}": {
             "type": "noul",
@@ -83,3 +84,11 @@ def typesafe_request(messages, notes, api_key):
         if probability >= RELEVANCE_CUTOFF:
             relevant.append(note)
     return relevant
+
+
+def typesafe_request(messages, notes, api_key):
+    return [
+        note
+        for start in range(0, len(notes), NOTE_BATCH_SIZE)
+        for note in typesafe_batch(messages, notes[start:start + NOTE_BATCH_SIZE], api_key)
+    ]
