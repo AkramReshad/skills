@@ -1,6 +1,6 @@
 ---
 name: streamline-codebase-workflow
-description: "Orchestrate codebase ergonomics improvements end to end: run improve-codebase-ergonomics, write an ordered opportunity manifest, assign one planning subagent per candidate, then implement each accepted plan sequentially through a fresh implementer, representative-task verification, full repository gate, independent review, finding resolution, closure review, and a scoped ergonomics(domain) commit. Use only when explicitly invoked as $streamline-codebase-workflow or by name. Do not invoke automatically for related codebase work."
+description: "Orchestrate codebase ergonomics improvements end to end: run one forked improve-codebase-ergonomics discovery subagent per codebase domain to build an ordered opportunity manifest, assign one planning subagent per candidate, then implement accepted plans in parallel worktrees through a fresh implementer, representative-task verification, focused checks, independent review, finding resolution, closure review, and a scoped ergonomics(domain) commit, then one full repository gate after every plan is integrated. Use only when explicitly invoked as $streamline-codebase-workflow or by name. Do not invoke automatically for related codebase work."
 ---
 
 # Streamline Codebase Workflow
@@ -23,15 +23,18 @@ Invocation authorizes the subagents required by this workflow. Respect repositor
 - Preserve runtime behaviour, domain meaning, and documented ownership unless the accepted plan explicitly changes them.
 - Create exactly one solution plan per accepted opportunity.
 - Delete workflow-created planning docs when they are no longer needed. Never stage or commit them.
+- Run discovery through one forked subagent per domain in `docs/codebase_domains.md`, excluding the documentation domain. Run them concurrently in waves permitted by the agent limit. Give each its own manifest section. The main agent orchestrates discovery only.
 - Allow planning agents to run concurrently in waves permitted by the agent limit. Give each a distinct output file.
-- Run implementation plans strictly sequentially. Finish implementation, representative-task verification, review, resolution, final gate, and commit for plan `i` before starting plan `i + 1`.
-- Use a fresh implementer agent and a fresh reviewer agent for every plan.
+- Run implementation plans in parallel, each in its own Git worktree created from its baseline. Advance each plan independently as its agents return. Integrate commits onto the workflow branch one at a time.
+- Remove each plan's worktree and branch once its commit is integrated.
+- Use a fresh implementer agent and a fresh reviewer agent for every plan. Spawn both as non-forked subagents on the main agent's model: the implementer with the highest available effort, the reviewer with effort `high`.
 - Reuse the original implementer agent for review resolution.
 - Do not let planning, implementation, or reviewer agents commit, push, or modify Git history.
-- Require representative-task verification and the repository's full gate after implementation and again after review-driven changes.
+- Require representative-task verification and focused checks after implementation and again after review-driven changes.
+- Run the repository's full gate once, after every plan is integrated onto the workflow branch. Before then, run only focused checks: type checking, linting, and focused tests.
 - Do not accept aesthetic preference, file movement, helper addition, or line-count reduction without verified friction reduction and a canonical path.
-- Do not commit with failed representative-task verification, a failed full gate, or unresolved critical/high findings.
-- Commit only the current plan's changes using `ergonomics(<domain>): <succinct message>`.
+- Do not commit with failed representative-task verification, failed focused checks, or unresolved findings.
+- Commit only the plan's changes using `ergonomics(<domain>): <succinct message>`.
 - Let planning files exceed source-file line guidance when extra detail prevents implementation rediscovery. Remove repetition; retain executable decisions.
 
 ## Phase 0: Establish control
@@ -39,29 +42,23 @@ Invocation authorizes the subagents required by this workflow. Respect repositor
 1. Read repository instructions, starting docs, architecture/domain language, conventions, notes, and relevant runbooks.
 2. Inspect `git status`, current branch, HEAD, and recent commits.
 3. Record pre-existing modified, deleted, and untracked paths. Treat them as user-owned unless the workflow creates them.
-4. Determine the repository's full gate from its instructions. Prefer the declared aggregate command. If none exists, compose formatting, linting, type checking, tests, and builds appropriate to the repository.
+4. Determine the repository's full gate from its instructions. Prefer the declared aggregate command. If none exists, compose formatting, linting, type checking, tests, and builds appropriate to the repository. Determine the focused checks: type checking, linting, and the tests covering changed code.
 5. Determine planning placement from repository instructions. Prefer `planning/project/` when it owns durable plans. Create no parallel planning taxonomy.
+6. Record the current branch as the workflow branch. Plan commits integrate onto it.
 
 ## Phase 1: Discover opportunities
 
-1. Apply `improve-codebase-ergonomics` personally as the main agent.
-2. Establish the requested domain's representative tasks and the code organization and usage surfaces they traverse before selecting implementation work. Use that scope to guide exploration. Finding a worthwhile opportunity does not complete discovery.
-3. Explore the codebase and apply its task-walkthrough, canonical-path, organization, discoverability, ceremony, choice, common-path, and residue tests. Do not delegate the root ergonomics judgment.
-4. Keep one opportunity manifest as a record of the search, containing:
-   - areas examined, with concrete code or task-walkthrough evidence;
-   - credible candidates, with reasons for accepting, rejecting, or deferring each;
-   - material areas or leads that remain unexplored;
-   - files and domains involved;
-   - representative task, current surface, friction category, and evidence;
-   - proposed organization or convenience improvement and canonical path;
-   - preserved behaviour and ownership;
-   - representative-task verification and test impact;
-   - stable domain slug for each candidate;
-   - solution-plan path and workflow status for accepted candidates.
-5. Discovery is complete when the scoped areas have been examined and meaningful leads have been investigated sufficiently to support candidate selection. Unexplored areas remain explicit gaps; they cannot be treated as having no worthwhile opportunities.
-6. Select and order accepted candidates after completing that survey. One accepted opportunity is valid when the discovery record supports that result.
-7. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as workflow statuses for accepted candidates.
-8. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all accepted candidates.
+The main agent orchestrates discovery only. It does not search the codebase, assess candidates, or edit the manifest after creating it.
+
+1. Read `docs/codebase_domains.md`. If it is absent, stop and report the missing domain map.
+2. Create the opportunity manifest at the planning placement with one empty section per domain. Exclude the documentation domain.
+3. Spawn one forked discovery subagent per section using the discovery prompt contract. Run them concurrently in waves permitted by the agent limit.
+4. Each subagent applies `improve-codebase-ergonomics` to its entire domain and leaves no area unexplored. It records, under its own section only, the areas examined with code or task-walkthrough evidence, every credible candidate with an accept, reject, or defer decision and reason, the candidate fields defined in the contract, and a stable domain slug.
+5. Before recording a candidate, each subagent checks the other sections and references an existing entry instead of recording a duplicate.
+6. Discovery is complete when every subagent has returned and recorded its section.
+7. Accepted candidates run in manifest order: domain order, then the order each subagent recorded them.
+8. Use `planned`, `implementing`, `reviewing`, `resolving`, and `complete` as workflow statuses for accepted candidates.
+9. If the user requested proposal review before execution, pause after the manifest. Otherwise continue through all accepted candidates.
 
 ## Phase 2: Produce N solution plans
 
@@ -69,7 +66,7 @@ Begin solution planning only after the Phase 1 discovery completion gate is sati
 
 For `N` accepted candidates:
 
-1. Assign exactly one planning subagent to each candidate using the planning prompt contract.
+1. Assign exactly one planning subagent to each candidate using the planning prompt contract. Spawn each as a non-forked subagent on the main agent's model with effort `xhigh`.
 2. Give each agent the manifest entry, relevant repository paths, repository instructions, required ergonomics vocabulary, and a unique plan path.
 3. Require planning only. Agents may edit only their assigned plan file.
 4. Require each plan to contain:
@@ -86,33 +83,34 @@ For `N` accepted candidates:
 5. Review every plan personally. Reconcile overlaps, sequencing dependencies, naming, competing canonical paths, and incompatible ownership before implementation.
 6. Update the manifest with accepted plan paths and final order.
 
-## Phase 3: Execute plan i
+## Phase 3: Execute plans in parallel
 
-Repeat this entire phase for each plan in manifest order. Keep exactly one plan in flight.
+Start plans in manifest order. For each plan, complete 3A and spawn its implementer in 3B, then start the next plan's 3A without waiting. When an agent returns, continue that plan's cycle from where it stopped. Plans advance independently; commits integrate one at a time in 3F.
 
 ### 3A. Baseline
 
 1. Record the current HEAD as the plan baseline.
-2. Re-read status and identify the files owned by this plan.
-3. Confirm no unresolved overlap with user changes or the preceding ergonomics improvement.
+2. Create the plan's worktree and branch from the baseline. Run all implementation, verification, focused-check, and commit work for this plan in that worktree.
+3. Identify the files owned by this plan and note overlap with other in-flight plans.
 4. Record the baseline task walkthrough and its friction evidence using the plan's verification surface.
 5. Mark the plan `implementing` in the manifest.
 
 ### 3B. Implement
 
-1. Spawn a fresh implementer agent `X` using the implementer prompt contract.
-2. Require `X` to implement the accepted plan end to end, migrate representative callers, delete obsolete paths and residue, update affected durable docs, add regression coverage, run the representative-task verification, and run the full gate.
-3. Require exact verification and gate commands with key output. A reported pass without command evidence is insufficient.
+1. Spawn a fresh non-forked implementer agent `X` on the main agent's model with the highest available effort, using the implementer prompt contract. Give it the plan's worktree path.
+2. Require `X` to implement the accepted plan end to end, migrate representative callers, delete obsolete paths and residue, update affected durable docs, add regression coverage, run the representative-task verification, and run focused checks.
+3. Require exact verification and focused-check commands with key output. A reported pass without command evidence is insufficient.
 4. Require `X` to stop without committing.
-5. Inspect the resulting diff, status, verification evidence, and gate evidence personally. Return out-of-scope changes to `X` for correction without discarding user work.
+5. When `X` returns, inspect the resulting diff, status, verification evidence, and focused-check evidence personally. Return out-of-scope changes to `X` for correction without discarding user work.
 
 ### 3C. Review
 
 1. Mark the plan `reviewing`.
-2. Spawn a fresh reviewer agent `Y` using the reviewer prompt contract.
-3. Give `Y` the accepted plan, baseline HEAD, baseline task walkthrough, current plan-owned diff, repository instructions, representative-task verification, and gate evidence.
+2. Spawn a fresh non-forked reviewer agent `Y` on the main agent's model with effort `high`, using the reviewer prompt contract.
+3. Give `Y` the plan's worktree path, the accepted plan, baseline HEAD, baseline task walkthrough, current plan-owned diff, repository instructions, representative-task verification, and focused-check evidence.
 4. Require a read-only, findings-first review. `Y` must not edit files.
-5. Require every finding to include severity, exact location, failure mode, and required outcome.
+5. Scope `Y` to the plan-owned diff. `Y` reads surrounding code only to judge the change and reports only defects in changed code or defects the change introduces. Pre-existing issues outside the diff are out of scope.
+6. Require every finding to include severity, exact location, failure mode, and required outcome.
 
 Severity meanings:
 
@@ -126,52 +124,59 @@ Severity meanings:
 1. Mark the plan `resolving`.
 2. Send the complete review back to the original implementer `X` with the resolution prompt contract.
 3. Require a disposition for every finding.
-4. Critical/high findings must be addressed. `X` may fix them or rebut them with concrete code evidence proving they are false positives.
-5. Medium/low findings may be fixed, deferred with a load-bearing rationale, or rebutted as false positives.
-6. Require `X` to update code/tests/docs as appropriate and rerun the representative-task verification and full gate after its final change.
-7. The main agent adjudicates disputes. Never accept a bare disagreement.
+4. Every finding must be fixed or rebutted. `X` may rebut a finding only with concrete code evidence proving it is a false positive. Deferral is not a disposition.
+5. Require `X` to update code/tests/docs as appropriate and rerun the representative-task verification and focused checks after its final change.
+6. The main agent adjudicates disputes. Never accept a bare disagreement.
 
 ### 3E. Close review
 
-1. If the review contained critical/high findings, send the final diff and dispositions back to reviewer `Y` using the closure prompt.
-2. Repeat resolution and closure while any critical/high finding remains valid or a new critical/high finding appears.
-3. Record medium/low dispositions. They do not block commitment when the rationale is technically sound.
-4. Inspect final status and diff personally.
-5. Confirm final representative-task verification and full-gate evidence reflect the post-review tree. Run either as main agent when evidence is incomplete or the tree changed afterward.
+1. If the review contained findings, send the final diff and dispositions back to reviewer `Y` using the closure prompt.
+2. Repeat resolution and closure while any finding remains valid or a new finding appears.
+3. Inspect final status and diff personally.
+4. Confirm final representative-task verification and focused-check evidence reflect the post-review tree. Run either as main agent when evidence is incomplete or the tree changed afterward.
 
 ### 3F. Commit
 
 1. Derive a concise stable domain slug from the manifest, such as `backend-tests`, `market-data`, `test-fixtures`, `api-client`, `commands`, or `configuration`.
 2. Mark the plan `complete` in the manifest, then delete its workflow-created solution plan.
-3. Stage only implementation files and affected durable docs. Do not stage planning docs.
+3. In the plan's worktree, stage only implementation files and affected durable docs. Do not stage planning docs.
 4. Review the staged diff.
 5. Commit with `ergonomics(<domain>): <succinct message>`.
-6. Verify the commit and clean separation from pre-existing user changes.
-7. Record the commit SHA in the main-agent acceptance record. Do not create a manifest-only change solely to record the SHA.
-8. Advance to plan `i + 1` only now.
+6. Rebase the plan's commit onto the current workflow branch. Resolve conflicts while preserving newer changes. If the rebase changed the base, rerun representative-task verification and focused checks in the worktree.
+7. Fast-forward the workflow branch to the rebased commit. Integrate one plan at a time.
+8. Verify the commit and clean separation from pre-existing user changes.
+9. Record the commit SHA in the main-agent acceptance record. Do not create a manifest-only change solely to record the SHA.
+10. Remove the plan's worktree and delete its branch.
+
+## Phase 4: Final gate
+
+After every plan is integrated onto the workflow branch and its worktree removed, run the repository's full gate on the workflow branch as main agent. Record the exact command and key output.
+
+If the full gate fails, spawn one subagent to fix it. That subagent keeps working until the full gate passes.
 
 ## Failure and revision handling
 
 - If the plan is materially wrong, pause the current implementation, revise the plan as main agent, and restart the current plan cycle with a fresh implementer. Do not silently diverge.
 - If representative-task verification does not establish reduced friction or relies on a brittle syntax/line-count assertion, revise the verification design before accepting the plan.
 - If implementation requires changing ownership, introducing a seam, concentrating distributed invariants, or optimizing runtime cost beyond the accepted plan, stop and report that the candidate crosses into architecture or performance work.
-- If the full gate exposes a pre-existing failure, prove it against the recorded baseline. The workflow still requires a green final gate unless the user explicitly changes acceptance.
+- If focused checks or the final full gate expose a pre-existing failure, prove it against the recorded baseline. The workflow still requires a green final full gate unless the user explicitly changes acceptance.
 - If user changes overlap the plan, preserve them and ask only when intent cannot be recovered safely.
-- If an agent becomes unavailable, spawn a replacement with the plan, baseline, current diff, and recorded findings. Preserve the sequential cycle.
+- If an agent becomes unavailable, spawn a replacement with the plan, baseline, current diff, and recorded findings. Preserve the plan's cycle and worktree.
 - If a destructive action or external authority is required, stop for approval.
 
 ## Completion
 
 Finish only when every accepted plan has its own committed implementation and:
 
-- discovery coverage and candidate dispositions are verified against the Phase 1 completion gate;
+- every non-documentation domain has a recorded discovery section with candidate dispositions;
 - the representative task has a verified reduction in friction;
 - one canonical path remains and obsolete residue is removed;
 - runtime behaviour, domain meaning, and accepted ownership remain intact;
-- all critical/high findings are closed;
-- all medium/low findings have recorded dispositions;
-- every final tree passed its full gate before commit;
-- commits are scoped and ordered;
+- every review finding is fixed or rebutted and closed;
+- every plan's final tree passed its focused checks before commit;
+- the workflow branch passed the full gate after every plan was integrated;
+- commits are scoped and integrated onto the workflow branch;
+- no workflow-created worktrees or branches remain;
 - durable architecture/convention docs reflect implemented organization and canonical usage where affected;
 - workflow-created planning docs are deleted and absent from commits;
 - pre-existing user changes remain intact.
@@ -179,4 +184,4 @@ Finish only when every accepted plan has its own committed implementation and:
 After all completion conditions are satisfied:
 
 1. Push the completed branch.
-2. Report the ordered commits, representative-task verification, gate commands/results, review dispositions, and any intentionally deferred medium/low findings.
+2. Report the ordered commits, representative-task verification, gate commands/results, and review dispositions.
