@@ -1,6 +1,6 @@
 ---
 read_when: Read before spawning planning, implementation, review, resolution, or closure agents for the repair-codebase workflow.
-last_updated: 2026-09-30
+last_updated: 2026-10-22
 ---
 
 # Agent Prompt Contracts
@@ -39,6 +39,7 @@ Planning only. Edit only [PLAN_PATH]. Do not change production code, other plans
 Implement accepted codebase repair plan [INDEX]: [TITLE].
 
 Repository: [ROOT]
+Worktree: [WORKTREE_PATH]
 Plan: [PLAN_PATH]
 Domain/severity group: [DOMAIN]/[SEVERITY]
 Source issues: [ALL_GROUP_ISSUE_IDS]
@@ -47,11 +48,11 @@ Baseline HEAD: [SHA]
 Pre-existing user paths: [PATHS]
 Plan-owned scope: [SCOPE]
 Required issue-specific verification: [VERIFICATION]
-Required full gate: [COMMAND]
+Required focused checks: [COMMAND]
 
-Read repository instructions and every document required by the plan. Inspect current status/diff before editing. Implement every source issue in the group plan end to end using the simplest repo-native design. Handle the entire group in this assignment; do not delegate individual issues to additional agents. Preserve unrelated and pre-existing changes. Update affected durable docs and regression coverage. If repository reality invalidates a material plan decision, stop and report the evidence before diverging.
+Read repository instructions and every document required by the plan. Work only in [WORKTREE_PATH]. Inspect current status/diff before editing. Implement every source issue in the group plan end to end using the simplest repo-native design. Handle the entire group in this assignment; do not delegate individual issues to additional agents. Preserve unrelated and pre-existing changes. Update affected durable docs and regression coverage. If repository reality invalidates a material plan decision, stop and report the evidence before diverging.
 
-Run targeted checks while working, then run [VERIFICATION] and [COMMAND] against the final tree. Fix failures within scope. Report exact commands and key output. Do not stage, commit, push, rewrite history, or perform destructive Git operations. Return changed files, a disposition and verification for every source issue, acceptance evidence, gate result, and any blocker.
+Run targeted checks while working, then run [VERIFICATION] and [COMMAND] against the final tree. Fix failures within scope. Report exact commands and key output. Do not run the full gate. Do not stage, commit, push, rewrite history, or perform destructive Git operations. Return changed files, a disposition and verification for every source issue, acceptance evidence, focused-check result, and any blocker.
 ```
 
 ## Reviewer Y
@@ -60,6 +61,7 @@ Run targeted checks while working, then run [VERIFICATION] and [COMMAND] against
 Review the implementation of codebase repair plan [INDEX]: [TITLE].
 
 Repository: [ROOT]
+Worktree: [WORKTREE_PATH]
 Plan: [PLAN_PATH]
 Domain/severity group: [DOMAIN]/[SEVERITY]
 Source issues: [ALL_GROUP_ISSUE_IDS]
@@ -67,9 +69,9 @@ Baseline HEAD: [SHA]
 Plan-owned diff/files: [DIFF_OR_PATHS]
 Repository instructions: [INSTRUCTION_PATHS]
 Reported issue-specific verification: [VERIFICATION_EVIDENCE]
-Reported gate evidence: [EVIDENCE]
+Reported focused-check evidence: [EVIDENCE]
 
-Review read-only. Do not edit, stage, commit, or push. Review every source issue in this domain/severity group within this assignment; do not delegate individual issues to additional agents. Verify every source issue is resolved and the implementation matches the accepted plan, repository contracts, callers, tests, migrations, runtime behavior, and failure modes. Inspect the actual diff and relevant surrounding code. Run read-only or non-mutating checks when useful.
+Review read-only. Do not edit, stage, commit, or push. Review only the plan-owned diff. Read surrounding code only to judge the change. Report only defects in changed code or defects the change introduces; pre-existing issues outside the diff are out of scope. Review every source issue in this domain/severity group within this assignment; do not delegate individual issues to additional agents. Verify every source issue is resolved and the implementation matches the accepted plan, repository contracts, callers, tests, migrations, runtime behavior, and failure modes. Inspect the actual diff and relevant surrounding code. Run read-only or non-mutating checks when useful.
 
 Report findings first, ordered critical, high, medium, low. For each finding include:
 - severity;
@@ -89,19 +91,17 @@ Resolve the independent review for plan [INDEX]: [TITLE].
 Review findings:
 [FINDINGS]
 
-Address every finding with a recorded disposition.
-- Critical/high: fix it, or rebut it with concrete code/test evidence proving it is not a real issue.
-- Medium/low: fix it, defer it with a load-bearing technical rationale, or rebut it as a false positive.
+Address every finding with a recorded disposition: fix it, or rebut it with concrete code/test evidence proving it is not a real issue. Deferral is not a disposition.
 
-Bare disagreement is insufficient. Preserve the accepted plan and unrelated user changes. Add or adjust regression coverage for valid behavioral findings. After the final edit, rerun targeted checks, the issue-specific verification [VERIFICATION], and the full gate [COMMAND]. Do not commit or push.
+Bare disagreement is insufficient. Preserve the accepted plan and unrelated user changes. Add or adjust regression coverage for valid behavioral findings. After the final edit, rerun targeted checks, the issue-specific verification [VERIFICATION], and the focused checks [COMMAND]. Do not run the full gate, commit, or push.
 
-Return, for each finding: disposition, rationale, files changed, and verification. Include exact final full-gate evidence.
+Return, for each finding: disposition, rationale, files changed, and verification. Include exact final focused-check evidence.
 ```
 
 ## Closure review with Y
 
 ```text
-Verify closure of the critical/high review findings for plan [INDEX]: [TITLE].
+Verify closure of the review findings for plan [INDEX]: [TITLE].
 
 Original findings:
 [FINDINGS]
@@ -111,9 +111,9 @@ Implementer dispositions:
 
 Final diff: [DIFF_OR_PATHS]
 Final issue-specific verification: [VERIFICATION_EVIDENCE]
-Final gate evidence: [EVIDENCE]
+Final focused-check evidence: [EVIDENCE]
 
-Review read-only. Confirm whether each critical/high finding is fixed or convincingly rebutted. Check for regressions introduced by the resolution. Report only remaining or new findings, with severity and evidence. State explicitly when all critical/high findings are closed. Do not edit, stage, commit, or push.
+Review read-only. Confirm whether each finding is fixed or convincingly rebutted. Check for regressions introduced by the resolution. Report only remaining or new findings, with severity and evidence. State explicitly when all findings are closed. Do not edit, stage, commit, or push.
 ```
 
 ## Main-agent acceptance record
@@ -123,6 +123,7 @@ For each plan, retain these facts until commitment:
 ```text
 Plan: [INDEX] [TITLE]
 Baseline: [SHA]
+Worktree: [WORKTREE_PATH]
 Implementer: [AGENT]
 Reviewer: [AGENT]
 Files: [PATHS]
@@ -130,12 +131,12 @@ Domain/severity group: [DOMAIN]/[SEVERITY]
 Source issues: [ISSUE_FILES + ALL_GROUP_IDS]
 Source issue outcomes: [ID + DISPOSITION + VERIFICATION FOR EACH ISSUE]
 Initial issue-specific verification: [METHOD + RESULT]
-Initial full gate: [COMMAND + RESULT]
+Initial focused checks: [COMMAND + RESULT]
 Findings: [SEVERITY + SUMMARY]
-Dispositions: [FIXED / REBUTTED / DEFERRED + RATIONALE]
+Dispositions: [FIXED / REBUTTED + RATIONALE]
 Closure: [RESULT]
 Final issue-specific verification: [METHOD + RESULT]
-Final full gate: [COMMAND + RESULT]
+Final focused checks: [COMMAND + RESULT]
 Commit: repair([DOMAIN]): [MESSAGE]
 Commit SHA: [SHA]
 ```
