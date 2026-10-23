@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Error Handling"
+  short_description: "Find failures that surface silently, inconsistently, or without their cause"
+  default_prompt: "Use $improve-codebase-error-handling to find codebase error-handling opportunities grounded in representative failure paths."
+
+policy:
+  allow_implicit_invocation: false
