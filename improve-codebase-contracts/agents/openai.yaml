@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Contracts"
+  short_description: "Find drift between producers and consumers across boundaries"
+  default_prompt: "Use $improve-codebase-contracts to find codebase contract-consistency opportunities grounded in representative boundary contracts."
+
+policy:
+  allow_implicit_invocation: false

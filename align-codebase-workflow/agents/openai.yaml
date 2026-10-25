@@ -1,0 +1,7 @@
+interface:
+  display_name: "Align Codebase Workflow"
+  short_description: "Plan, implement, review, and commit contract consistency"
+  default_prompt: "Use $align-codebase-workflow to discover and execute codebase contract-consistency opportunities end to end."
+
+policy:
+  allow_implicit_invocation: false
