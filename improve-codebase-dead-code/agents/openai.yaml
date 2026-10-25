@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Dead Code"
+  short_description: "Find elements no live entry point reaches"
+  default_prompt: "Use $improve-codebase-dead-code to find codebase dead-code opportunities grounded in reachability evidence."
+
+policy:
+  allow_implicit_invocation: false
