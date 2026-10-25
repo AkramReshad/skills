@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Coverage"
+  short_description: "Find contracts callers rely on that no test would catch breaking"
+  default_prompt: "Use $improve-codebase-coverage to find codebase coverage opportunities grounded in representative contracts."
+
+policy:
+  allow_implicit_invocation: false

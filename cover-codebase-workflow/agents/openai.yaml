@@ -1,0 +1,7 @@
+interface:
+  display_name: "Cover Codebase Workflow"
+  short_description: "Plan, implement, review, and commit coverage"
+  default_prompt: "Use $cover-codebase-workflow to discover and execute codebase coverage opportunities end to end."
+
+policy:
+  allow_implicit_invocation: false
