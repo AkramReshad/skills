@@ -62,7 +62,7 @@ Review categories — consider at least these:
 5. Tests — missing coverage, stale tests, weak assertions, broken test structure.
 6. UX — confusing flows, broken affordances, poor operator experience where relevant.
 
-Exclude error handling. Silent substitution, dropped failures, lost causes, inconsistent error shapes, misplaced handling, over-broad catches, and hidden fallbacks or partial results belong to `improve-codebase-error-handling`. Do not report them here.
+Exclude error handling: silent substitution, dropped failures, lost causes, inconsistent error shapes, misplaced handling, over-broad catches, and hidden fallbacks or partial results. Do not report them.
 
 Require concrete evidence and consequence. Respect repo-local conventions and accepted product decisions. Keep reviewing after finding high-severity issues; retain all validated issues without a candidate quota. Do not duplicate existing valid findings or re-flag accepted non-issues unless their revisit trigger is met or code changed materially.
 
