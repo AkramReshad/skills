@@ -62,6 +62,8 @@ Review categories — consider at least these:
 5. Tests — missing coverage, stale tests, weak assertions, broken test structure.
 6. UX — confusing flows, broken affordances, poor operator experience where relevant.
 
+Exclude error handling. Silent substitution, dropped failures, lost causes, inconsistent error shapes, misplaced handling, over-broad catches, and hidden fallbacks or partial results belong to `improve-codebase-error-handling`. Do not report them here.
+
 Require concrete evidence and consequence. Respect repo-local conventions and accepted product decisions. Keep reviewing after finding high-severity issues; retain all validated issues without a candidate quota. Do not duplicate existing valid findings or re-flag accepted non-issues unless their revisit trigger is met or code changed materially.
 
 Write `code_review/{domain_slug}_issues.md`, updating the current file in place. Derive slugs from domain names: lowercase, replace `&` with `and`, replace other non-alphanumeric runs with underscores, trim surrounding underscores. Reuse established filenames when present.
@@ -102,7 +104,7 @@ Wait until all domain reviews finish. Run one fresh validation agent per domain 
 For every existing and newly found issue:
 
 - Validate it fully in the current code before proposing a fix.
-- Remove it if resolved, disproven, or duplicated; retain the canonical finding for duplicates.
+- Remove it if resolved, disproven, duplicated, or excluded error handling; retain the canonical finding for duplicates.
 - Move explicitly accepted concerns into `code_review/non-issues.md` with a short reason and revisit trigger. Do not infer user acceptance from severity or implementation cost.
 - For each still-valid issue, add or update **Industry Standard Fix:** with a concrete approach, affected code, relevant constraints, and verification. Explain the approach beyond a one-line suggestion.
 - No shortcuts, hacks, or workarounds. Do not implement; the user will implement later.
