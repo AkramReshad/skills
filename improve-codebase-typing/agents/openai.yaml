@@ -1,0 +1,7 @@
+interface:
+  display_name: "Improve Codebase Typing"
+  short_description: "Find declared types that disagree with runtime values"
+  default_prompt: "Use $improve-codebase-typing to find codebase typing opportunities grounded in representative value flows."
+
+policy:
+  allow_implicit_invocation: false

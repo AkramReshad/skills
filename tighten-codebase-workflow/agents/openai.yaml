@@ -1,0 +1,7 @@
+interface:
+  display_name: "Tighten Codebase Workflow"
+  short_description: "Plan, implement, review, and commit typing"
+  default_prompt: "Use $tighten-codebase-workflow to discover and execute codebase typing opportunities end to end."
+
+policy:
+  allow_implicit_invocation: false
