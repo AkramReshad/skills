@@ -36,3 +36,22 @@ Test-suite maintenance and repository-layout maintenance address additional sour
 Each skill has a distinct purpose. Minimal overlap is desirable, while useful changes remain possible where concerns intersect. Readability improvements may include proportional structural changes when those changes directly make behavior easier to follow.
 
 Skills guide model attention and judgment. Model quality still matters; a skill cannot guarantee good findings or good implementation.
+
+## Run order
+
+Run the workflows in this order. Each pass treats the results of earlier passes as settled.
+
+1. Dead code (`prune-codebase-workflow`). Remove unreachable code first so every later pass reviews, fixes, and restructures only live code.
+2. Quality (`repair-codebase-workflow`). Fix real bugs so later passes start from code that works and tests that can be trusted.
+3. Coverage (`cover-codebase-workflow`). Add tests for correct behaviour after the bugs are fixed, so later structural passes have a safety net. Tests target contracts through interfaces, so most survive refactors.
+4. Architecture (`deepen-codebase-workflow`). Make the largest structural moves before anything polishes code that might then move.
+5. Repository layout. Once ownership has settled, put files where their owners predict.
+6. Error handling (`surface-codebase-workflow`). Handle failures at the layers Architecture settled.
+7. Typing (`tighten-codebase-workflow`). Make declared types true for the settled structure and error handling.
+8. Contracts (`align-codebase-workflow`). Align consumers with producers once types are true and error shapes are stable.
+9. Ergonomics (`streamline-codebase-workflow`). Smooth how the settled pieces are found and called.
+10. Performance (`optimize-codebase-workflow`). Optimize the final structure against code that will not be reshuffled afterwards.
+11. Readability (`clarify-codebase-workflow`). Make the final code, including optimizations, easy to read without changing runtime cost.
+12. Test suite. Prune last, after every earlier pass has added or replaced tests.
+
+Ergonomics, Performance, and Readability preserve types, contracts, and error modes as invariants, so those must be correct before they run.
