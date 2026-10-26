@@ -30,6 +30,12 @@ The maintenance skills provide recurring, focused engineering scrutiny:
 - Readability examines the effort required to understand behavior and safely change it.
 - Performance examines unnecessary computational and operational cost.
 - Ergonomics examines friction in working with and reusing the codebase.
+- Quality examines defects with concrete consequences in every domain.
+- Error handling examines whether failures surface explicitly, consistently, and with their cause.
+- Dead code examines code that no live entry point reaches.
+- Typing examines whether declared types match runtime values.
+- Coverage examines behaviour callers rely on that no test protects.
+- Contracts examines whether producers and consumers across a boundary agree.
 
 Test-suite maintenance and repository-layout maintenance address additional sources of accumulated disorder.
 
