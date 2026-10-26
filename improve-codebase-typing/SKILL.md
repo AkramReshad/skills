@@ -54,6 +54,8 @@ Then walk the codebase. Use subagents only when the user explicitly asks for par
 - Where do ignore comments or suppressions hide disagreements the checker would otherwise report?
 - Where do type guards or assertions claim a narrowing they do not check?
 
+Start from tool output. Inspect the repository for its type checkers and typing standard and use them at the repository's configured strictness. If none exists, choose the best checker for the repository's languages and run it without adding it to the project's dependencies or configuration. Measure findings against the repository's own typing standard; do not raise it. Treat checker output as candidates, not proof. Explore for what checkers cannot see: casts and assertions that satisfy the checker but are false at runtime, and boundaries without runtime parsing.
+
 Apply the **type-walkthrough**, **truth**, **boundary-parse**, **escape**, **narrowing**, **nullability**, **precision**, **propagation**, and **suppression** tests in [TYPING.md](TYPING.md). Require a concrete value flow where the declared type can disagree with the runtime value; checker strictness preference alone is not a candidate. Trace entries, conversions, and uses before attributing the defect to one location.
 
 ### 2. Present candidates

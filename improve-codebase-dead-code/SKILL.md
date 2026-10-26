@@ -52,6 +52,8 @@ Then walk the codebase. Use subagents only when the user explicitly asks for par
 - Which routes, jobs, commands, or handlers are defined but never registered or scheduled?
 - Which configuration keys, constants, or types does nothing read?
 
+Start from tool output. Inspect the repository for configured dead-code analysis and use it. If none exists, choose the best analyzer for the repository's languages and run it without adding it to the project's dependencies or configuration. Treat analyzer output as candidates, not proof. Explore for what analyzers cannot see: dynamic references, cross-language references, consumers outside the repository, and settled flags.
+
 Apply the **reachability**, **reference**, **condition**, **flag**, **test-only**, **dynamic-reference**, and **residue** tests in [DEAD-CODE.md](DEAD-CODE.md). Require a concrete reachability trace; unfamiliar code or low usage alone is not a candidate. Trace entry points, references, and dynamic lookups before declaring an element dead.
 
 ### 2. Present candidates

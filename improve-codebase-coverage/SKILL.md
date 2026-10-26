@@ -51,6 +51,8 @@ Then walk the codebase. Use subagents only when the user explicitly asks for par
 - Where do tests run code but make no assertion that could fail?
 - Where do tests reach past the interface into internals, leaving the caller's contract untested?
 
+Start from tool output. Inspect the repository for configured coverage and mutation testing and use them. If none exists, choose the best tools for the repository's languages and run them without adding them to the project's dependencies or configuration. Treat uncovered code and surviving mutants as candidates, not proof. Explore for what these tools cannot see: executed code whose behaviour no assertion checks, and contracts callers rely on across modules.
+
 Apply the **contract-walkthrough**, **mutation**, **caller-reliance**, **edge**, **error-mode**, **regression**, **assertion-strength**, and **interface-surface** tests in [COVERAGE.md](COVERAGE.md). Require a concrete contract a caller relies on; a coverage percentage or an unexecuted line alone is not a candidate. Trace callers and existing tests before declaring a gap.
 
 ### 2. Present candidates
