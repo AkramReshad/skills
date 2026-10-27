@@ -7,7 +7,13 @@ description: Create a concise learning note in the current workspace's notes/ di
 
 ## Workflow
 
-1. Identify concrete learnings useful to future sessions: discoveries, project behavior, technical decisions and their rationale, and user preferences. Save as many notes as you believe would be useful. Exclude generic verification instructions and temporary status updates such as progress reports, pending work, test-run totals, and completion reports. Write each learning with enough context to remain useful after the original task is finished, without requiring knowledge of that session’s history or organization.
+1. Identify concrete learnings useful to future sessions: discoveries, project behavior, technical decisions and their rationale, and user preferences. Save every learning that passes all four checks:
+   - **Generalizes.** It remains true after removing incident specifics such as dates, run IDs, and values from one run. If nothing remains, it is a log entry.
+   - **Not obvious.** A competent agent reading the code at the point of use would not already do it or infer it.
+   - **Has a consequence.** Ignoring it produces a wrong result or a costly detour, and you can name which.
+   - **Actionable.** It can be stated as "When <situation>, <fact or rule>, because <reason>." If any part cannot be filled, do not write the note.
+
+   Exclude generic verification instructions and temporary status updates such as progress reports, pending work, test-run totals, and completion reports. Write each learning with enough context to remain useful after the original task is finished, without requiring knowledge of that session’s history or organization.
 2. Create a new Markdown file under `notes/` in the current workspace.
 3. Use a descriptive, snake_case filename (e.g., `admin_routing_and_ai_toggle.md`).
 4. Write short, succinct, actionable content that future AI agents can use. Each note should capture one focused learning or reusable insight in a few bullets, at most 150 words. Split distinct insights into separate notes.
