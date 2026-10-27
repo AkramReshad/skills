@@ -9,7 +9,7 @@ import certifi
 
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
-RELEVANCE_CUTOFF = 0.85
+RELEVANCE_CUTOFF = 0.9
 NOTE_BATCH_SIZE = 100
 
 
